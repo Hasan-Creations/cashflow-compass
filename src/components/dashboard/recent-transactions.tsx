@@ -23,7 +23,8 @@ import {
 import { useTransactionStore } from "@/store/transactions";
 
 export function RecentTransactions() {
-  const { transactions } = useTransactionStore();
+  const { getUserTransactions } = useTransactionStore();
+  const transactions = getUserTransactions();
 
   return (
     <Card>

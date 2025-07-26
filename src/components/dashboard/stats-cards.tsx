@@ -10,8 +10,11 @@ import { mockTransactions } from "@/data/mock-data";
 import { mockRecurringExpenses } from "@/data/mock-data";
 
 export function StatsCards() {
-  const { transactions, setTransactions } = useTransactionStore();
-  const { recurringExpenses, setRecurringExpenses } = useRecurringExpenseStore();
+  const { setTransactions, getUserTransactions } = useTransactionStore();
+  const { setRecurringExpenses, getUserRecurringExpenses } = useRecurringExpenseStore();
+  
+  const transactions = getUserTransactions();
+  const recurringExpenses = getUserRecurringExpenses();
 
   useEffect(() => {
     setTransactions(mockTransactions);

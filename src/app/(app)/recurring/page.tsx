@@ -10,7 +10,8 @@ import { useRecurringExpenseStore } from "@/store/recurring";
 import { mockRecurringExpenses } from "@/data/mock-data";
 
 export default function RecurringPage() {
-  const { recurringExpenses, setRecurringExpenses } = useRecurringExpenseStore();
+  const { setRecurringExpenses, getUserRecurringExpenses } = useRecurringExpenseStore();
+  const recurringExpenses = getUserRecurringExpenses();
 
   useEffect(() => {
     setRecurringExpenses(mockRecurringExpenses);

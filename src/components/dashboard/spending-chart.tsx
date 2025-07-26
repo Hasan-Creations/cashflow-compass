@@ -7,7 +7,8 @@ import { useTransactionStore } from "@/store/transactions";
 import { useMemo } from "react";
 
 export function SpendingChart() {
-  const { transactions } = useTransactionStore();
+  const { getUserTransactions } = useTransactionStore();
+  const transactions = getUserTransactions();
 
   const data = useMemo(() => {
     const monthlySpending: { [key: string]: number } = {

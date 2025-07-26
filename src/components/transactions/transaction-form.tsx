@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { useTransactionStore } from "@/store/transactions";
 import { incomeCategories, expenseCategories } from "@/data/mock-data";
 import { Transaction } from "@/types";
+import { useUserStore } from "@/store/user";
 
 const formSchema = z.object({
   description: z.string().min(1, "Description is required."),
@@ -47,6 +48,7 @@ export function TransactionForm({ type }: TransactionFormProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const addTransaction = useTransactionStore((state) => state.addTransaction);
+  const user = useUserStore((state) => state.user);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,19 +63,30 @@ export function TransactionForm({ type }: TransactionFormProps) {
   const categories = type === "income" ? incomeCategories : expenseCategories;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "You must be logged in to add a transaction.",
+        });
+        return;
+    }
+
     setIsLoading(true);
-    const newTransaction: Transaction = {
+    const newTransaction: Omit<Transaction, 'userId'> = {
       id: new Date().toISOString(), // simple unique id
       ...values,
       date: format(values.date, "yyyy-MM-dd"),
       type,
     };
 
+    const newTransactionWithUser = { ...newTransaction, userId: user.id };
+
     try {
       const response = await fetch('/api/update-json', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: 'transactions.json', data: newTransaction }),
+        body: JSON.stringify({ filename: 'transactions.json', data: newTransactionWithUser }),
       });
 
       if (!response.ok) {
@@ -216,4 +229,3 @@ export function TransactionForm({ type }: TransactionFormProps) {
     </Dialog>
   );
 }
-

@@ -1,5 +1,7 @@
+
 export type Transaction = {
   id: string;
+  userId: string;
   type: 'income' | 'expense';
   category: string;
   amount: number;
@@ -15,6 +17,7 @@ export type Category = {
 
 export type SavingGoal = {
     id: string;
+    userId: string;
     name: string;
     targetAmount: number;
     currentAmount: number;
@@ -23,6 +26,7 @@ export type SavingGoal = {
 
 export type RecurringExpense = {
     id: string;
+    userId: string;
     name: string;
     category: string;
     amount: number;

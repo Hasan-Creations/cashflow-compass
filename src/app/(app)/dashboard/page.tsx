@@ -11,7 +11,8 @@ import { useSavingGoalStore } from "@/store/goals";
 import { mockSavingGoals } from "@/data/mock-data";
 
 export default function DashboardPage() {
-  const { savingGoals, setSavingGoals } = useSavingGoalStore();
+  const { setSavingGoals, getUserGoals } = useSavingGoalStore();
+  const savingGoals = getUserGoals();
   
   useEffect(() => {
     setSavingGoals(mockSavingGoals);

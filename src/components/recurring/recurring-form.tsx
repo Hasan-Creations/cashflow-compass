@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { expenseCategories } from "@/data/mock-data";
 import { RecurringExpense } from "@/types";
 import { useRecurringExpenseStore } from "@/store/recurring";
+import { useUserStore } from "@/store/user";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -44,6 +45,7 @@ export function RecurringForm() {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const addRecurringExpense = useRecurringExpenseStore((state) => state.addRecurringExpense);
+  const user = useUserStore((state) => state.user);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,12 +59,22 @@ export function RecurringForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+     if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "You must be logged in to add a recurring expense.",
+        });
+        return;
+    }
     setIsLoading(true);
-    const newRecurringExpense: RecurringExpense = {
+    const newRecurringExpense: Omit<RecurringExpense, "userId"> = {
       id: new Date().toISOString(),
       ...values,
       nextPaymentDate: format(values.nextPaymentDate, "yyyy-MM-dd"),
     };
+
+    const newRecurringExpenseWithUser = { ...newRecurringExpense, userId: user.id };
 
     try {
       const response = await fetch('/api/update-json', {
@@ -70,7 +82,7 @@ export function RecurringForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             filename: 'recurring.json', 
-            data: newRecurringExpense
+            data: newRecurringExpenseWithUser
         }),
       });
 
