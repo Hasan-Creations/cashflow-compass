@@ -1,11 +1,22 @@
+
+"use client";
+
+import { useEffect } from "react";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useSavingGoalStore } from "@/store/goals";
 import { mockSavingGoals } from "@/data/mock-data";
 
 export default function DashboardPage() {
+  const { savingGoals, setSavingGoals } = useSavingGoalStore();
+  
+  useEffect(() => {
+    setSavingGoals(mockSavingGoals);
+  }, [setSavingGoals]);
+
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
       <StatsCards />
@@ -22,20 +33,24 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
-              {mockSavingGoals.map((goal) => {
-                const progress = (goal.currentAmount / goal.targetAmount) * 100;
-                return (
-                  <div key={goal.id} className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{goal.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        ${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}
-                      </span>
+              {savingGoals.length > 0 ? (
+                savingGoals.map((goal) => {
+                  const progress = (goal.currentAmount / goal.targetAmount) * 100;
+                  return (
+                    <div key={goal.id} className="grid gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">{goal.name}</span>
+                        <span className="text-sm text-muted-foreground">
+                          ₨{goal.currentAmount.toLocaleString()} / ₨{goal.targetAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <Progress value={progress} aria-label={`${goal.name} progress`} />
                     </div>
-                    <Progress value={progress} aria-label={`${goal.name} progress`} />
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <p className="text-sm text-muted-foreground">No saving goals yet. Add one from the Goals page!</p>
+              )}
             </CardContent>
           </Card>
         </div>

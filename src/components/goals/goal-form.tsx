@@ -21,65 +21,61 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon, Loader2, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { expenseCategories } from "@/data/mock-data";
-import { RecurringExpense } from "@/types";
-import { useRecurringExpenseStore } from "@/store/recurring";
+import { useSavingGoalStore } from "@/store/goals";
+import { SavingGoal } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
-  amount: z.preprocess(
+  targetAmount: z.preprocess(
     (a) => parseFloat(z.string().parse(a)),
-    z.number().positive("Amount must be a positive number.")
+    z.number().positive("Target amount must be a positive number.")
   ),
-  nextPaymentDate: z.date(),
-  category: z.string().min(1, "Category is required."),
-  frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']),
+  currentAmount: z.preprocess(
+    (a) => parseFloat(z.string().parse(a)),
+    z.number().min(0, "Current amount cannot be negative.")
+  ),
+  deadline: z.date(),
 });
 
-export function RecurringForm() {
+export function SavingGoalForm() {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const addRecurringExpense = useRecurringExpenseStore((state) => state.addRecurringExpense);
+  const addSavingGoal = useSavingGoalStore((state) => state.addSavingGoal);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      amount: 0,
-      nextPaymentDate: new Date(),
-      category: "",
-      frequency: 'monthly',
+      targetAmount: 0,
+      currentAmount: 0,
+      deadline: new Date(),
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    const newRecurringExpense: RecurringExpense = {
-      id: new Date().toISOString(),
+    const newSavingGoal: SavingGoal = {
+      id: new Date().toISOString(), // simple unique id
       ...values,
-      nextPaymentDate: format(values.nextPaymentDate, "yyyy-MM-dd"),
+      deadline: format(values.deadline, "yyyy-MM-dd"),
     };
 
     try {
       const response = await fetch('/api/update-json', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            filename: 'recurring.json', 
-            data: newRecurringExpense
-        }),
+        body: JSON.stringify({ filename: 'goals.json', data: newSavingGoal }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save recurring expense');
+        throw new Error('Failed to save saving goal');
       }
-      
-      addRecurringExpense(newRecurringExpense);
-      toast({ title: "Success", description: "Recurring expense added successfully." });
+
+      addSavingGoal(newSavingGoal);
+      toast({ title: "Success", description: "Saving goal added successfully." });
       setOpen(false);
       form.reset();
     } catch (error) {
@@ -87,7 +83,7 @@ export function RecurringForm() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: `Failed to add recurring expense. Please try again.`,
+        description: `Failed to add saving goal. Please try again.`,
       });
     } finally {
       setIsLoading(false);
@@ -98,16 +94,14 @@ export function RecurringForm() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" className="gap-1">
-            <PlusCircle className="h-4 w-4" /> Add Recurring
+          <PlusCircle className="h-4 w-4" /> New Goal
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            Add New Recurring Expense
-          </DialogTitle>
+          <DialogTitle>Add New Saving Goal</DialogTitle>
           <DialogDescription>
-            Enter the details for your new recurring payment or subscription.
+            Enter the details for your new financial goal.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -117,9 +111,9 @@ export function RecurringForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Goal Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Netflix Subscription" {...field} />
+                    <Input placeholder="e.g. New Car" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -127,10 +121,10 @@ export function RecurringForm() {
             />
             <FormField
               control={form.control}
-              name="amount"
+              name="targetAmount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel>Target Amount</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0.00" {...field} />
                   </FormControl>
@@ -138,57 +132,25 @@ export function RecurringForm() {
                 </FormItem>
               )}
             />
-             <FormField
+            <FormField
               control={form.control}
-              name="category"
+              name="currentAmount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {expenseCategories.map(cat => (
-                        <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Current Amount</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0.00" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="frequency"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Frequency</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a frequency" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="daily">Daily</SelectItem>
-                        <SelectItem value="weekly">Weekly</SelectItem>
-                        <SelectItem value="monthly">Monthly</SelectItem>
-                        <SelectItem value="yearly">Yearly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="nextPaymentDate"
+              name="deadline"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Next Payment Date</FormLabel>
+                  <FormLabel>Deadline</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -199,11 +161,7 @@ export function RecurringForm() {
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -224,7 +182,7 @@ export function RecurringForm() {
             <DialogFooter>
               <Button type="submit" disabled={isLoading}>
                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Save
+                Save Goal
               </Button>
             </DialogFooter>
           </form>
