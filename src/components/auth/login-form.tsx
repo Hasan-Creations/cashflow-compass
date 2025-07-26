@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +19,7 @@ import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@/types";
+import { useUserStore } from "@/store/user";
 
 
 const formSchema = z.object({
@@ -30,6 +32,7 @@ export function LoginForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
+  const { setUser } = useUserStore();
 
   useEffect(() => {
     async function fetchUsers() {
@@ -72,6 +75,8 @@ export function LoginForm() {
           title: "Login Successful",
           description: "Welcome back!",
         });
+        const { password, ...userToStore } = user;
+        setUser(userToStore);
         router.push("/dashboard");
       } else {
         toast({

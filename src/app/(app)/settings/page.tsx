@@ -1,19 +1,27 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { useTransactionStore } from "@/store/transactions";
 import { useToast } from "@/hooks/use-toast";
-import { Transaction } from "@/types";
+import { useUserStore } from "@/store/user";
+import { Loader2 } from "lucide-react";
 
 export default function SettingsPage() {
   const { transactions } = useTransactionStore();
   const { toast } = useToast();
+  const { user, setUser } = useUserStore();
+  const [name, setName] = useState(user?.name || "");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setName(user?.name || "");
+  }, [user]);
 
   const handleExport = () => {
     if (transactions.length === 0) {
@@ -56,6 +64,38 @@ export default function SettingsPage() {
     });
   }
 
+  const handleProfileUpdate = async () => {
+    if (!user || name === user.name) return;
+    setIsLoading(true);
+    try {
+       const response = await fetch('/api/update-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: user.id, name }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update user profile.');
+      }
+
+      const updatedUser = { ...user, name };
+      setUser(updatedUser); // Update user in zustand store
+      toast({
+        title: "Profile Updated",
+        description: "Your name has been updated successfully.",
+      });
+
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "Could not update your profile. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-6">
       <div className="grid gap-2">
@@ -68,17 +108,21 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
-          <CardDescription>Update your personal information.</CardDescription>
+          <CardDescription>Update your personal information. Click save when you're done.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" defaultValue="User" />
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" defaultValue="user@example.com" disabled />
+            <Input id="email" type="email" value={user?.email || ""} disabled />
           </div>
+           <Button onClick={handleProfileUpdate} disabled={isLoading || name === user?.name} className="w-fit">
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+          </Button>
         </CardContent>
       </Card>
 
