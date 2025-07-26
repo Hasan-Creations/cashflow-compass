@@ -85,43 +85,48 @@ export function RecentTransactions() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead className="table-cell">Type</TableHead>
-                <TableHead className="hidden sm:table-cell">Category</TableHead>
-                <TableHead className="hidden sm:table-cell">Date</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="w-[50px]">Actions</TableHead>
+                <TableHead className="px-2 sm:px-4">Description</TableHead>
+                <TableHead className="table-cell px-2 sm:px-4">Type</TableHead>
+                <TableHead className="hidden sm:table-cell px-2 sm:px-4">Category</TableHead>
+                <TableHead className="hidden sm:table-cell px-2 sm:px-4">Date</TableHead>
+                <TableHead className="text-right px-2 sm:px-4">Amount</TableHead>
+                <TableHead className="w-[50px] px-2 sm:px-4">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {transactions.slice(0, 5).map((transaction) => (
                 <TableRow key={transaction.id}>
-                  <TableCell>
+                  <TableCell className="px-2 sm:px-4">
                     <div className="font-medium">{transaction.description}</div>
                     <div className="text-sm text-muted-foreground sm:hidden">
                         {transaction.date}
                     </div>
                   </TableCell>
-                  <TableCell className="table-cell">
+                  <TableCell className="table-cell px-2 sm:px-4">
                     {transaction.type === "income" ? (
                       <Badge variant="outline" className="text-green-600 border-green-600/50 bg-green-500/10">Income</Badge>
                     ) : (
                       <Badge variant="outline" className="text-red-600 border-red-600/50 bg-red-500/10">Expense</Badge>
                     )}
+                     <div className="text-sm text-muted-foreground sm:hidden">
+                       <Badge className="text-xs mt-1" variant="secondary">
+                        {transaction.category}
+                      </Badge>
+                    </div>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">
+                  <TableCell className="hidden sm:table-cell px-2 sm:px-4">
                     <Badge className="text-xs" variant="secondary">
                       {transaction.category}
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">
+                  <TableCell className="hidden sm:table-cell px-2 sm:px-4">
                     {transaction.date}
                   </TableCell>
-                  <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : ''}`}>
+                  <TableCell className={`text-right font-medium px-2 sm:px-4 ${transaction.type === 'income' ? 'text-green-500' : ''}`}>
                     {transaction.type === "income" ? "+ " : "- "}
                     {currency}{transaction.amount.toFixed(2)}
                   </TableCell>
-                   <TableCell>
+                   <TableCell className="px-2 sm:px-4">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
