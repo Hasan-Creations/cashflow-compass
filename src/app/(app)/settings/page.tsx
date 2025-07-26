@@ -147,7 +147,7 @@ export default function SettingsPage() {
           <div className="grid gap-2">
             <Label htmlFor="currency">Currency</Label>
             <Select onValueChange={handleCurrencyChange} defaultValue={currencies.find(c => c.symbol === currency)?.value}>
-              <SelectTrigger id="currency" className="w-[180px]">
+              <SelectTrigger id="currency" className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
               <SelectContent>
@@ -176,7 +176,7 @@ export default function SettingsPage() {
           <CardTitle>Danger Zone</CardTitle>
           <CardDescription>These actions are irreversible.</CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center justify-between rounded-lg border border-destructive/50 p-4">
+        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border border-destructive/50 p-4 gap-4">
            <div>
             <h4 className="font-semibold">Delete Account</h4>
             <p className="text-sm text-muted-foreground">Permanently delete your account and all associated data.</p>

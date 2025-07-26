@@ -14,8 +14,8 @@ export default function RecommendationsPage() {
   };
 
   return (
-    <div className="grid gap-8 md:grid-cols-5">
-      <div className="md:col-span-2">
+    <div className="grid gap-8 md:grid-cols-3">
+      <div className="md:col-span-1">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline">
@@ -31,7 +31,7 @@ export default function RecommendationsPage() {
           </CardContent>
         </Card>
       </div>
-      <div className="md:col-span-3">
+      <div className="md:col-span-2">
         {recommendation ? (
           <div className="space-y-6">
             <Card>

@@ -18,12 +18,12 @@ export function CurrentBalance() {
   return (
     <Card className="sticky top-14 sm:top-4 mb-4 z-20">
       <CardHeader className="p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <CardDescription>Current Balance</CardDescription>
             <CardTitle className="text-4xl font-headline">{currency}{balance.toLocaleString()}</CardTitle>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 self-start sm:self-center">
             <TransactionForm type="income" />
             <TransactionForm type="expense" />
           </div>

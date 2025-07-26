@@ -59,8 +59,8 @@ export function TransactionsClient() {
         <TableRow>
           <TableHead>Description</TableHead>
           <TableHead className="hidden sm:table-cell">Type</TableHead>
-          <TableHead className="hidden sm:table-cell">Category</TableHead>
-          <TableHead className="hidden md:table-cell">Date</TableHead>
+          <TableHead className="hidden md:table-cell">Category</TableHead>
+          <TableHead className="hidden lg:table-cell">Date</TableHead>
           <TableHead className="text-right">Amount</TableHead>
         </TableRow>
       </TableHeader>
@@ -77,12 +77,12 @@ export function TransactionsClient() {
                 <Badge variant="outline" className="text-red-600 border-red-600/50 bg-red-500/10">Expense</Badge>
               )}
             </TableCell>
-            <TableCell className="hidden sm:table-cell">
+            <TableCell className="hidden md:table-cell">
               <Badge className="text-xs" variant="secondary">
                 {transaction.category}
               </Badge>
             </TableCell>
-            <TableCell className="hidden md:table-cell">
+            <TableCell className="hidden lg:table-cell">
               {transaction.date}
             </TableCell>
             <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : ''}`}>
