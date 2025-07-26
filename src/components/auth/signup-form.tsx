@@ -40,29 +40,32 @@ export function SignupForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
     const existingUser = users.find(u => u.email === values.email);
 
+    if (existingUser) {
+        toast({
+            variant: "destructive",
+            title: "Signup Failed",
+            description: "An account with this email already exists.",
+        });
+        setIsLoading(false);
+        return
+    }
+
+    // In a real app, you would have an API endpoint to handle this.
+    // For this prototype, we are directly manipulating the user data.
+    users.push({ ...values, id: String(users.length + 1) });
+
     setTimeout(() => {
       setIsLoading(false);
-      if (existingUser) {
-        toast({
-          variant: "destructive",
-          title: "Signup Failed",
-          description: "An account with this email already exists.",
-        });
-      } else {
-        // In a real app, you would send this to a server to create the user
-        // and then update the users.json file. For now, we just log it.
-        console.log("New user created (not saved to file):", values);
-        toast({
-          title: "Signup Successful",
-          description: "Your account has been created.",
-        });
-        router.push("/dashboard");
-      }
+      toast({
+        title: "Signup Successful",
+        description: "Your account has been created.",
+      });
+      router.push("/dashboard");
     }, 1000);
   }
 
