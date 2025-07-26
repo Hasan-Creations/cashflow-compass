@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { getSpendingRecommendations, type SpendingRecommendationsOutput } from "@/ai/flows/spending-recommendations";
-import { mockTransactions, mockSavingGoals } from "@/data/mock-data";
+import { useTransactionStore } from "@/store/transactions";
+import { useSavingGoalStore } from "@/store/goals";
 import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -29,15 +30,25 @@ interface RecommendationsFormProps {
 export function RecommendationsForm({ onNewRecommendation }: RecommendationsFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const { transactions } = useTransactionStore();
+  const { savingGoals } = useSavingGoalStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      income: 3500,
-      spendingData: JSON.stringify(mockTransactions, null, 2),
-      savingGoals: JSON.stringify(mockSavingGoals, null, 2),
+      income: 0,
+      spendingData: "[]",
+      savingGoals: "[]",
     },
   });
+
+  useEffect(() => {
+    form.setValue("spendingData", JSON.stringify(transactions, null, 2));
+  }, [transactions, form]);
+
+  useEffect(() => {
+    form.setValue("savingGoals", JSON.stringify(savingGoals, null, 2));
+  }, [savingGoals, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
