@@ -55,18 +55,38 @@ export function SignupForm() {
         return
     }
 
-    // In a real app, you would have an API endpoint to handle this.
-    // For this prototype, we are directly manipulating the user data.
-    users.push({ ...values, id: String(users.length + 1) });
+    try {
+      const response = await fetch('/api/update-json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: 'users.json',
+          data: { ...values, id: String(users.length + 1) },
+        }),
+      });
 
-    setTimeout(() => {
-      setIsLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to save user data');
+      }
+
       toast({
         title: "Signup Successful",
         description: "Your account has been created.",
       });
       router.push("/dashboard");
-    }, 1000);
+
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: "An error occurred while creating your account.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
