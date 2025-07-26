@@ -9,11 +9,9 @@ import { useTransactionStore } from "@/store/transactions";
 import { useSavingGoalStore } from "@/store/goals";
 import { useRecurringExpenseStore } from "@/store/recurring";
 import { useEffect } from "react";
-import transactions from "@/data/transactions.json";
-import goals from "@/data/goals.json";
-import recurring from "@/data/recurring.json";
 import { useUserStore } from "@/store/user";
 import { useRouter } from "next/navigation";
+import { Transaction, SavingGoal, RecurringExpense } from "@/types";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useUserStore();
@@ -26,10 +24,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (!user) {
       router.push('/login');
     } else {
-      // Load all data from JSON files into stores
-      setTransactions(transactions);
-      setSavingGoals(goals);
-      setRecurringExpenses(recurring);
+      const fetchData = async () => {
+        try {
+          const [transactionsRes, goalsRes, recurringRes] = await Promise.all([
+            fetch('/api/transactions'),
+            fetch('/api/goals'),
+            fetch('/api/recurring'),
+          ]);
+
+          if (!transactionsRes.ok || !goalsRes.ok || !recurringRes.ok) {
+            throw new Error('Failed to fetch data');
+          }
+          
+          const transactions: Transaction[] = await transactionsRes.json();
+          const goals: SavingGoal[] = await goalsRes.json();
+          const recurring: RecurringExpense[] = await recurringRes.json();
+
+          setTransactions(transactions);
+          setSavingGoals(goals);
+          setRecurringExpenses(recurring);
+        } catch (error) {
+            console.error("Failed to load data from APIs", error);
+        }
+      };
+      
+      fetchData();
     }
   }, [user, router, setTransactions, setSavingGoals, setRecurringExpenses]);
 
