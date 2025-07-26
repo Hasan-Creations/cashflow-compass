@@ -67,7 +67,7 @@ export function RecentTransactions() {
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center p-4 sm:p-6">
+        <CardHeader className="flex flex-row items-center px-4 py-4 sm:px-6">
           <div className="grid gap-2">
             <CardTitle>Recent Transactions</CardTitle>
             <CardDescription>
