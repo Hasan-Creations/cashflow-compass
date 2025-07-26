@@ -42,36 +42,34 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <SpendingChart />
         </div>
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Saving Goals</CardTitle>
-              <CardDescription>
-                {getGoalStatusMessage()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              {savingGoals.length > 0 ? (
-                savingGoals.map((goal) => {
-                  const progress = (goal.currentAmount / goal.targetAmount) * 100;
-                  return (
-                    <div key={goal.id} className="grid gap-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">{goal.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {currency}{goal.currentAmount.toLocaleString()} / {currency}{goal.targetAmount.toLocaleString()}
-                        </span>
-                      </div>
-                      <Progress value={progress} aria-label={`${goal.name} progress`} />
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle>Saving Goals</CardTitle>
+            <CardDescription>
+              {getGoalStatusMessage()}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            {savingGoals.length > 0 ? (
+              savingGoals.map((goal) => {
+                const progress = (goal.currentAmount / goal.targetAmount) * 100;
+                return (
+                  <div key={goal.id} className="grid gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">{goal.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {currency}{goal.currentAmount.toLocaleString()} / {currency}{goal.targetAmount.toLocaleString()}
+                      </span>
                     </div>
-                  );
-                })
-              ) : (
-                <p className="text-sm text-muted-foreground">No saving goals yet. Add one from the Goals page!</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    <Progress value={progress} aria-label={`${goal.name} progress`} />
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-sm text-muted-foreground">No saving goals yet. Add one from the Goals page!</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
       <RecentTransactions />
     </div>
