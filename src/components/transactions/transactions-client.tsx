@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useEffect } from "react";
 import { File, ListFilter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,20 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTransactionStore } from "@/store/transactions";
 import { Transaction } from "@/types";
 
-interface TransactionsClientProps {
-  initialTransactions: Transaction[];
-}
-
-export function TransactionsClient({ initialTransactions }: TransactionsClientProps) {
-  const { transactions, setTransactions, getFilteredTransactions } = useTransactionStore();
-
-  useEffect(() => {
-    setTransactions(initialTransactions);
-  }, [initialTransactions, setTransactions]);
-
-  const allTransactions = getFilteredTransactions('all');
-  const incomeTransactions = getFilteredTransactions('income');
-  const expenseTransactions = getFilteredTransactions('expense');
+export function TransactionsClient() {
+  const allTransactions = useTransactionStore((state) => state.getFilteredTransactions('all'));
+  const incomeTransactions = useTransactionStore((state) => state.getFilteredTransactions('income'));
+  const expenseTransactions = useTransactionStore((state) => state.getFilteredTransactions('expense'));
 
   const renderTable = (data: Transaction[]) => (
      <Table>

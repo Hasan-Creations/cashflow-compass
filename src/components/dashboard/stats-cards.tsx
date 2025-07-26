@@ -1,25 +1,14 @@
 
 "use client";
 
-import { useEffect } from "react";
 import { useTransactionStore } from "@/store/transactions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowDownRight, ArrowUpRight, DollarSign, PiggyBank } from "lucide-react";
 import { useRecurringExpenseStore } from "@/store/recurring";
-import { mockTransactions } from "@/data/mock-data";
-import { mockRecurringExpenses } from "@/data/mock-data";
 
 export function StatsCards() {
-  const { setTransactions, getUserTransactions } = useTransactionStore();
-  const { setRecurringExpenses, getUserRecurringExpenses } = useRecurringExpenseStore();
-  
-  const transactions = getUserTransactions();
-  const recurringExpenses = getUserRecurringExpenses();
-
-  useEffect(() => {
-    setTransactions(mockTransactions);
-    setRecurringExpenses(mockRecurringExpenses);
-  }, [setTransactions, setRecurringExpenses]);
+  const transactions = useTransactionStore((state) => state.getUserTransactions());
+  const recurringExpenses = useRecurringExpenseStore((state) => state.getUserRecurringExpenses());
 
   const totalIncome = transactions
     .filter((t) => t.type === "income")
@@ -42,7 +31,6 @@ export function StatsCards() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">₨{totalIncome.toLocaleString()}</div>
-          {/* <p className="text-xs text-muted-foreground">+10% from last month</p> */}
         </CardContent>
       </Card>
       <Card>
@@ -52,7 +40,6 @@ export function StatsCards() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">₨{totalExpenses.toLocaleString()}</div>
-          {/* <p className="text-xs text-muted-foreground">+5% from last month</p> */}
         </CardContent>
       </Card>
       <Card>

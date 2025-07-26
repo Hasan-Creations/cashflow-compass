@@ -1,23 +1,16 @@
 
 "use client";
 
-import { useEffect } from "react";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useSavingGoalStore } from "@/store/goals";
-import { mockSavingGoals } from "@/data/mock-data";
 
 export default function DashboardPage() {
-  const { setSavingGoals, getUserGoals } = useSavingGoalStore();
-  const savingGoals = getUserGoals();
+  const savingGoals = useSavingGoalStore((state) => state.getUserGoals());
   
-  useEffect(() => {
-    setSavingGoals(mockSavingGoals);
-  }, [setSavingGoals]);
-
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
       <StatsCards />

@@ -5,15 +5,9 @@ import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTransactionStore } from "@/store/transactions";
 import { TransactionForm } from "./transactions/transaction-form";
-import { mockTransactions } from "@/data/mock-data";
 
 export function CurrentBalance() {
-  const { transactions, balance, setTransactions, calculateBalance } = useTransactionStore();
-
-  useEffect(() => {
-    // initial load from "DB"
-    setTransactions(mockTransactions);
-  }, [setTransactions]);
+  const { transactions, balance, calculateBalance } = useTransactionStore();
 
   useEffect(() => {
     calculateBalance();

@@ -1,21 +1,14 @@
 
 "use client";
 
-import { useEffect } from "react";
 import { RecurringForm } from "@/components/recurring/recurring-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useRecurringExpenseStore } from "@/store/recurring";
-import { mockRecurringExpenses } from "@/data/mock-data";
 
 export default function RecurringPage() {
-  const { setRecurringExpenses, getUserRecurringExpenses } = useRecurringExpenseStore();
-  const recurringExpenses = getUserRecurringExpenses();
-
-  useEffect(() => {
-    setRecurringExpenses(mockRecurringExpenses);
-  }, [setRecurringExpenses]);
+  const recurringExpenses = useRecurringExpenseStore((state) => state.getUserRecurringExpenses());
 
   return (
     <Card>

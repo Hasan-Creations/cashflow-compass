@@ -1,23 +1,15 @@
 
 "use client";
 
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { PlusCircle } from "lucide-react";
 import { SavingGoalForm } from "@/components/goals/goal-form";
 import { useSavingGoalStore } from "@/store/goals";
-import { mockSavingGoals } from "@/data/mock-data";
 
 
 export default function GoalsPage() {
-  const { setSavingGoals, getUserGoals } = useSavingGoalStore();
-  const savingGoals = getUserGoals();
-
-  useEffect(() => {
-    setSavingGoals(mockSavingGoals);
-  }, [setSavingGoals]);
+  const savingGoals = useSavingGoalStore((state) => state.getUserGoals());
 
   return (
     <div className="grid gap-6">

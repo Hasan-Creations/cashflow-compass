@@ -1,9 +1,43 @@
+
+"use client";
+
 import { MainSidebar } from "@/components/main-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { UserNav } from "@/components/user-nav";
 import { CurrentBalance } from "@/components/current-balance";
+import { useTransactionStore } from "@/store/transactions";
+import { useSavingGoalStore } from "@/store/goals";
+import { useRecurringExpenseStore } from "@/store/recurring";
+import { useEffect } from "react";
+import transactions from "@/data/transactions.json";
+import goals from "@/data/goals.json";
+import recurring from "@/data/recurring.json";
+import { useUserStore } from "@/store/user";
+import { useRouter } from "next/navigation";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useUserStore();
+  const router = useRouter();
+  const setTransactions = useTransactionStore((state) => state.setTransactions);
+  const setSavingGoals = useSavingGoalStore((state) => state.setSavingGoals);
+  const setRecurringExpenses = useRecurringExpenseStore((state) => state.setRecurringExpenses);
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      // Load all data from JSON files into stores
+      setTransactions(transactions);
+      setSavingGoals(goals);
+      setRecurringExpenses(recurring);
+    }
+  }, [user, router, setTransactions, setSavingGoals, setRecurringExpenses]);
+
+  // Render nothing or a loading spinner if there's no user
+  if (!user) {
+    return null; 
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <MainSidebar />
