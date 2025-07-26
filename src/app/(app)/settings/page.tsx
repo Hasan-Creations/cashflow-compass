@@ -11,11 +11,12 @@ import { useTransactionStore } from "@/store/transactions";
 import { useToast } from "@/hooks/use-toast";
 import { useUserStore } from "@/store/user";
 import { Loader2 } from "lucide-react";
+import { currencies } from "@/data/mock-data";
 
 export default function SettingsPage() {
   const { transactions } = useTransactionStore();
   const { toast } = useToast();
-  const { user, setUser } = useUserStore();
+  const { user, setUser, currency, setCurrency } = useUserStore();
   const [name, setName] = useState(user?.name || "");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -96,6 +97,17 @@ export default function SettingsPage() {
     }
   };
 
+  const handleCurrencyChange = (value: string) => {
+    const selectedCurrency = currencies.find(c => c.value === value);
+    if(selectedCurrency) {
+      setCurrency(selectedCurrency.symbol);
+      toast({
+        title: "Currency Updated",
+        description: `Your currency has been set to ${selectedCurrency.label}.`,
+      });
+    }
+  }
+
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-6">
       <div className="grid gap-2">
@@ -134,16 +146,14 @@ export default function SettingsPage() {
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="currency">Currency</Label>
-            <Select defaultValue="pkr">
+            <Select onValueChange={handleCurrencyChange} defaultValue={currencies.find(c => c.symbol === currency)?.value}>
               <SelectTrigger id="currency" className="w-[180px]">
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pkr">PKR (₨)</SelectItem>
-                <SelectItem value="usd">USD ($)</SelectItem>
-                <SelectItem value="eur">EUR (€)</SelectItem>
-                <SelectItem value="gbp">GBP (£)</SelectItem>
-                <SelectItem value="jpy">JPY (¥)</SelectItem>
+                {currencies.map(c => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

@@ -5,10 +5,12 @@ import { useTransactionStore } from "@/store/transactions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowDownRight, ArrowUpRight, DollarSign, PiggyBank } from "lucide-react";
 import { useRecurringExpenseStore } from "@/store/recurring";
+import { useUserStore } from "@/store/user";
 
 export function StatsCards() {
   const transactions = useTransactionStore((state) => state.getUserTransactions());
   const recurringExpenses = useRecurringExpenseStore((state) => state.getUserRecurringExpenses());
+  const { currency } = useUserStore();
 
   const totalIncome = transactions
     .filter((t) => t.type === "income")
@@ -30,7 +32,7 @@ export function StatsCards() {
           <ArrowUpRight className="h-4 w-4 text-muted-foreground text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">₨{totalIncome.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</div>
         </CardContent>
       </Card>
       <Card>
@@ -39,7 +41,7 @@ export function StatsCards() {
           <ArrowDownRight className="h-4 w-4 text-muted-foreground text-red-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">₨{totalExpenses.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{currency}{totalExpenses.toLocaleString()}</div>
         </CardContent>
       </Card>
       <Card>
@@ -48,7 +50,7 @@ export function StatsCards() {
           <PiggyBank className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">₨{savings.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{currency}{savings.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">Your current savings</p>
         </CardContent>
       </Card>
@@ -58,7 +60,7 @@ export function StatsCards() {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">₨{totalSubscriptions.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{currency}{totalSubscriptions.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">{recurringExpenses.length} active subscriptions</p>
         </CardContent>
       </Card>

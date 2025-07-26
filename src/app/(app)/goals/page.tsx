@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { SavingGoalForm } from "@/components/goals/goal-form";
 import { useSavingGoalStore } from "@/store/goals";
+import { useUserStore } from "@/store/user";
 
 
 export default function GoalsPage() {
   const savingGoals = useSavingGoalStore((state) => state.getUserGoals());
+  const { currency } = useUserStore();
 
   return (
     <div className="grid gap-6">
@@ -21,7 +23,7 @@ export default function GoalsPage() {
             <SavingGoalForm />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {savingGoals.map((goal) => {
+            {savingGoals.length > 0 ? savingGoals.map((goal) => {
                 const progress = (goal.currentAmount / goal.targetAmount) * 100;
                 return (
                 <Card key={goal.id}>
@@ -34,14 +36,18 @@ export default function GoalsPage() {
                     </CardHeader>
                     <CardContent>
                     <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                        <span>₨{goal.currentAmount.toLocaleString()}</span>
-                        <span>₨{goal.targetAmount.toLocaleString()}</span>
+                        <span>{currency}{goal.currentAmount.toLocaleString()}</span>
+                        <span>{currency}{goal.targetAmount.toLocaleString()}</span>
                     </div>
                     <Progress value={progress} aria-label={`${goal.name} progress`} />
                     </CardContent>
                 </Card>
                 );
-            })}
+            }) : (
+              <Card className="md:col-span-3 flex items-center justify-center py-12">
+                <p className="text-muted-foreground">You haven't set any goals yet. Click "New Goal" to start!</p>
+              </Card>
+            )}
         </div>
     </div>
   );

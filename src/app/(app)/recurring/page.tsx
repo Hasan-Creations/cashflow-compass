@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useRecurringExpenseStore } from "@/store/recurring";
+import { useUserStore } from "@/store/user";
 
 export default function RecurringPage() {
   const recurringExpenses = useRecurringExpenseStore((state) => state.getUserRecurringExpenses());
+  const { currency } = useUserStore();
 
   return (
     <Card>
@@ -35,19 +37,27 @@ export default function RecurringPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {recurringExpenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="font-medium">{expense.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{expense.category}</Badge>
-                </TableCell>
-                <TableCell className="capitalize">{expense.frequency}</TableCell>
-                <TableCell>{expense.nextPaymentDate}</TableCell>
-                <TableCell className="text-right font-medium">
-                  ₨{expense.amount.toFixed(2)}
+            {recurringExpenses.length > 0 ? (
+              recurringExpenses.map((expense) => (
+                <TableRow key={expense.id}>
+                  <TableCell className="font-medium">{expense.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{expense.category}</Badge>
+                  </TableCell>
+                  <TableCell className="capitalize">{expense.frequency}</TableCell>
+                  <TableCell>{expense.nextPaymentDate}</TableCell>
+                  <TableCell className="text-right font-medium">
+                    {currency}{expense.amount.toFixed(2)}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No recurring expenses found.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </CardContent>

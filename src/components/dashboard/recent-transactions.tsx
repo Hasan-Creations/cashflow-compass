@@ -21,9 +21,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTransactionStore } from "@/store/transactions";
+import { useUserStore } from "@/store/user";
 
 export function RecentTransactions() {
   const { getUserTransactions } = useTransactionStore();
+  const { currency } = useUserStore();
   const transactions = getUserTransactions();
 
   return (
@@ -76,10 +78,17 @@ export function RecentTransactions() {
                 </TableCell>
                 <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : ''}`}>
                   {transaction.type === "income" ? "+ " : "- "}
-                  ₨{transaction.amount.toFixed(2)}
+                  {currency}{transaction.amount.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
+             {transactions.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No transactions yet.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>

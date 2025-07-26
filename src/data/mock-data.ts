@@ -26,3 +26,11 @@ export const categories: Category[] = [
 
 export const incomeCategories = categories.filter(c => ['salary', 'freelance'].includes(c.id));
 export const expenseCategories = categories.filter(c => !['salary', 'freelance'].includes(c.id));
+
+export const currencies = [
+  { value: "pkr", label: "PKR (₨)", symbol: "₨" },
+  { value: "usd", label: "USD ($)", symbol: "$" },
+  { value: "eur", label: "EUR (€)", symbol: "€" },
+  { value: "gbp", label: "GBP (£)", symbol: "£" },
+  { value: "jpy", label: "JPY (¥)", symbol: "¥" },
+];

@@ -5,9 +5,11 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useTransactionStore } from "@/store/transactions";
 import { useMemo } from "react";
+import { useUserStore } from "@/store/user";
 
 export function SpendingChart() {
   const { getUserTransactions } = useTransactionStore();
+  const { currency } = useUserStore();
   const transactions = getUserTransactions();
 
   const data = useMemo(() => {
@@ -53,7 +55,7 @@ export function SpendingChart() {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `₨${value}`}
+              tickFormatter={(value) => `${currency}${value}`}
             />
             <Tooltip
               cursor={{ fill: 'hsl(var(--accent))', opacity: 0.2 }}
@@ -62,7 +64,7 @@ export function SpendingChart() {
                 borderColor: 'hsl(var(--border))',
                 borderRadius: 'var(--radius)'
               }}
-              formatter={(value: number) => [`₨${value.toLocaleString()}`, "Total"]}
+              formatter={(value: number) => [`${currency}${value.toLocaleString()}`, "Total"]}
             />
             <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
           </BarChart>
