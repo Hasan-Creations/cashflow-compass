@@ -67,7 +67,7 @@ export function RecentTransactions() {
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center">
+        <CardHeader className="flex flex-row items-center p-4 sm:p-6">
           <div className="grid gap-2">
             <CardTitle>Recent Transactions</CardTitle>
             <CardDescription>
@@ -81,14 +81,14 @@ export function RecentTransactions() {
             </Link>
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:p-6 sm:pt-0">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Description</TableHead>
-                <TableHead className="hidden sm:table-cell">Type</TableHead>
+                <TableHead className="table-cell">Type</TableHead>
                 <TableHead className="hidden sm:table-cell">Category</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead className="hidden sm:table-cell">Date</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead className="w-[50px]">Actions</TableHead>
               </TableRow>
@@ -98,8 +98,11 @@ export function RecentTransactions() {
                 <TableRow key={transaction.id}>
                   <TableCell>
                     <div className="font-medium">{transaction.description}</div>
+                    <div className="text-sm text-muted-foreground sm:hidden">
+                        {transaction.date}
+                    </div>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">
+                  <TableCell className="table-cell">
                     {transaction.type === "income" ? (
                       <Badge variant="outline" className="text-green-600 border-green-600/50 bg-green-500/10">Income</Badge>
                     ) : (
@@ -111,7 +114,7 @@ export function RecentTransactions() {
                       {transaction.category}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     {transaction.date}
                   </TableCell>
                   <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : ''}`}>

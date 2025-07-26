@@ -1,4 +1,3 @@
-
 "use client";
 
 import { StatsCards } from "@/components/dashboard/stats-cards";
@@ -19,7 +18,7 @@ export default function DashboardPage() {
     const totalCurrent = savingGoals.reduce((acc, goal) => acc + goal.currentAmount, 0);
     const totalTarget = savingGoals.reduce((acc, goal) => acc + goal.targetAmount, 0);
     if (totalTarget === 0) return 0;
-    return (totalCurrent / totalTarget) * 100;
+    return Math.min((totalCurrent / totalTarget) * 100, 100); // Cap at 100%
   }, [savingGoals]);
 
   const getGoalStatusMessage = () => {
@@ -36,42 +35,94 @@ export default function DashboardPage() {
   };
   
   return (
-    <div className="grid auto-rows-max items-start gap-4 md:gap-8">
-      <StatsCards />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+    <div className="space-y-6 py-4 md:p-6">
+      {/* Stats Cards Section */}
+      <div className="w-full">
+        <StatsCards />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Spending Chart - Takes 2/3 width on large screens */}
+        <div className="lg:col-span-2 min-h-0">
           <SpendingChart />
         </div>
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Saving Goals</CardTitle>
-            <CardDescription>
-              {getGoalStatusMessage()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6">
-            {savingGoals.length > 0 ? (
-              savingGoals.map((goal) => {
-                const progress = (goal.currentAmount / goal.targetAmount) * 100;
-                return (
-                  <div key={goal.id} className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{goal.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {currency}{goal.currentAmount.toLocaleString()} / {currency}{goal.targetAmount.toLocaleString()}
-                      </span>
+
+        {/* Saving Goals Card - Takes 1/3 width on large screens */}
+        <div className="lg:col-span-1">
+          <Card className="h-full">
+            <CardHeader className="pb-4">
+              <CardTitle>Saving Goals</CardTitle>
+              <CardDescription>
+                {getGoalStatusMessage()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {savingGoals.length > 0 ? (
+                <>
+                  {/* Overall Progress Summary if multiple goals */}
+                  {savingGoals.length > 1 && (
+                    <div className="border-b pb-4 mb-4">
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="font-medium">Overall Progress</span>
+                        <span className="text-muted-foreground">
+                          {totalProgress.toFixed(0)}%
+                        </span>
+                      </div>
+                      <Progress 
+                        value={totalProgress} 
+                        aria-label="Overall saving goals progress" 
+                        className="h-2"
+                      />
                     </div>
-                    <Progress value={progress} aria-label={`${goal.name} progress`} />
+                  )}
+
+                  {/* Individual Goals */}
+                  <div className="space-y-4 max-h-64 overflow-y-auto">
+                    {savingGoals.map((goal) => {
+                      const progress = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
+                      return (
+                        <div key={goal.id} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-sm truncate pr-2">
+                              {goal.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {currency}{goal.currentAmount.toLocaleString()} / {currency}{goal.targetAmount.toLocaleString()}
+                            </span>
+                          </div>
+                          <Progress 
+                            value={progress} 
+                            aria-label={`${goal.name} progress: ${progress.toFixed(0)}%`}
+                            className="h-2"
+                          />
+                          <div className="text-xs text-muted-foreground text-right">
+                            {progress.toFixed(0)}% complete
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })
-            ) : (
-              <p className="text-sm text-muted-foreground">No saving goals yet. Add one from the Goals page!</p>
-            )}
-          </CardContent>
-        </Card>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    No saving goals yet.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Add one from the Goals page to track your progress!
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-      <RecentTransactions />
+
+      {/* Recent Transactions Section */}
+      <div className="w-full">
+        <RecentTransactions />
+      </div>
     </div>
   );
 }
