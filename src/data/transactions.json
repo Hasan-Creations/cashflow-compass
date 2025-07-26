@@ -1,3 +1,4 @@
+
 [
   {
     "id": "2025-07-26T09:42:25.845Z",
@@ -5,7 +6,8 @@
     "amount": 20000,
     "date": "2025-07-26",
     "category": "Salary",
-    "type": "income"
+    "type": "income",
+    "userId": "2025-07-26T09:49:50.093Z"
   },
   {
     "id": "2025-07-26T09:43:59.267Z",
@@ -13,6 +15,7 @@
     "amount": 5000,
     "date": "2025-07-26",
     "category": "Transport",
-    "type": "expense"
+    "type": "expense",
+    "userId": "2025-07-26T09:49:50.093Z"
   }
 ]

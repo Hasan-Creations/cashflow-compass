@@ -6,7 +6,6 @@ import recurring from './recurring.json';
 
 // We are moving away from mock data, but will keep these files for type consistency
 // and potentially for seeding in the future.
-export const mockTransactions: Transaction[] = transactions;
 export const mockSavingGoals: SavingGoal[] = goals;
 export const mockRecurringExpenses: RecurringExpense[] = recurring;
 
