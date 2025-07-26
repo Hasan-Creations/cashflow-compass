@@ -84,7 +84,7 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
         category: "",
       });
     }
-  }, [transaction, isEditMode]);
+  }, [transaction, isEditMode, form]);
 
   const categories = type === "income" ? incomeCategories : expenseCategories;
 
