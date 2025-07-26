@@ -16,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import users from '@/data/users.json';
+
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -25,6 +28,7 @@ const formSchema = z.object({
 
 export function SignupForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -38,11 +42,27 @@ export function SignupForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    console.log(values);
-    // Mock signup logic
+
+    const existingUser = users.find(u => u.email === values.email);
+
     setTimeout(() => {
       setIsLoading(false);
-      router.push("/dashboard");
+      if (existingUser) {
+        toast({
+          variant: "destructive",
+          title: "Signup Failed",
+          description: "An account with this email already exists.",
+        });
+      } else {
+        // In a real app, you would send this to a server to create the user
+        // and then update the users.json file. For now, we just log it.
+        console.log("New user created (not saved to file):", values);
+        toast({
+          title: "Signup Successful",
+          description: "Your account has been created.",
+        });
+        router.push("/dashboard");
+      }
     }, 1000);
   }
 

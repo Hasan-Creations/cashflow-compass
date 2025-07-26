@@ -16,14 +16,17 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import users from '@/data/users.json';
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  password: z.string().min(1, { message: "Password is required." }),
 });
 
 export function LoginForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -36,11 +39,24 @@ export function LoginForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    console.log(values);
-    // Mock login logic
+    
+    const user = users.find(u => u.email === values.email && u.password === values.password);
+
     setTimeout(() => {
       setIsLoading(false);
-      router.push("/dashboard");
+      if (user) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back!",
+        });
+        router.push("/dashboard");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Invalid email or password.",
+        });
+      }
     }, 1000);
   }
 

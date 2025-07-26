@@ -40,11 +40,12 @@ export default function SettingsPage() {
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="currency">Currency</Label>
-            <Select defaultValue="usd">
+            <Select defaultValue="pkr">
               <SelectTrigger id="currency" className="w-[180px]">
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="pkr">PKR (₨)</SelectItem>
                 <SelectItem value="usd">USD ($)</SelectItem>
                 <SelectItem value="eur">EUR (€)</SelectItem>
                 <SelectItem value="gbp">GBP (£)</SelectItem>
