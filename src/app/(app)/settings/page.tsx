@@ -1,11 +1,61 @@
+
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useTransactionStore } from "@/store/transactions";
+import { useToast } from "@/hooks/use-toast";
+import { Transaction } from "@/types";
 
 export default function SettingsPage() {
+  const { transactions } = useTransactionStore();
+  const { toast } = useToast();
+
+  const handleExport = () => {
+    if (transactions.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No Data",
+        description: "There are no transactions to export.",
+      });
+      return;
+    }
+
+    const headers = ["ID", "Type", "Category", "Amount", "Date", "Description"];
+    const csvContent = [
+      headers.join(','),
+      ...transactions.map(t => [t.id, t.type, t.category, t.amount, t.date, `"${t.description.replace(/"/g, '""')}"`].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `transactions-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+     toast({
+        title: "Export Successful",
+        description: "Your transaction data has been exported as a CSV file.",
+      });
+  };
+  
+  const handleBackup = () => {
+    // This is a placeholder for actual Google Drive integration.
+    toast({
+      title: "Backup Initiated",
+      description: "Your data is being backed up. In a real app, this would connect to Google Drive.",
+    });
+  }
+
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-6">
       <div className="grid gap-2">
@@ -62,8 +112,8 @@ export default function SettingsPage() {
           <CardDescription>Export or backup your financial data.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Button variant="outline">Export Data as CSV</Button>
-          <Button variant="outline">Backup to Google Drive</Button>
+          <Button variant="outline" onClick={handleExport}>Export Data as CSV</Button>
+          <Button variant="outline" onClick={handleBackup}>Backup to Google Drive</Button>
         </CardContent>
       </Card>
 
