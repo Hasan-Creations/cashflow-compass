@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -5,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { Menu } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet"
 import { Icons } from "@/components/icons"
 import { cn } from "@/lib/utils"
 
@@ -34,6 +35,12 @@ export function MobileSidebar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation Menu</SheetTitle>
+                <SheetDescription>
+                  A list of links to navigate to different pages of the application.
+                </SheetDescription>
+              </SheetHeader>
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
                   href="#"
