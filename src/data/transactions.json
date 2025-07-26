@@ -1,6 +1,6 @@
 [
   {
-    "id": "2025-07-26T09:42:25.845Z",
+    "id": "2025-07-26T15:37:00.140Z",
     "description": "salary ",
     "amount": 20000,
     "date": "2025-07-26",
@@ -9,25 +9,7 @@
     "userId": "2025-07-26T09:49:50.093Z"
   },
   {
-    "id": "2025-07-26T09:43:59.267Z",
-    "description": "FEE",
-    "amount": 5000,
-    "date": "2025-07-26",
-    "category": "Transport",
-    "type": "expense",
-    "userId": "2025-07-26T09:49:50.093Z"
-  },
-  {
-    "id": "2025-07-26T10:43:38.702Z",
-    "description": "FEE",
-    "amount": 8650,
-    "date": "2025-07-26",
-    "category": "Education",
-    "type": "expense",
-    "userId": "2025-07-26T09:49:50.093Z"
-  },
-  {
-    "id": "2025-07-26T10:44:19.080Z",
+    "id": "2025-07-26T15:37:18.255Z",
     "description": "FEE",
     "amount": 8650,
     "date": "2025-07-26",

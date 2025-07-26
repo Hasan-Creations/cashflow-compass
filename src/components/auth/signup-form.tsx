@@ -15,10 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { User } from "@/types";
+import { auth, db } from "@/firebase/config";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { useUserStore } from "@/store/user";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -30,29 +33,7 @@ export function SignupForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (error) {
-        console.error(error);
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Could not load user data. Please try again later.",
-        });
-      }
-    }
-    fetchUsers();
-  }, [toast]);
-
+  const setUser = useUserStore((state) => state.setUser);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -66,34 +47,19 @@ export function SignupForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    const existingUser = users.find(u => u.email === values.email);
-
-    if (existingUser) {
-        toast({
-            variant: "destructive",
-            title: "Signup Failed",
-            description: "An account with this email already exists.",
-        });
-        setIsLoading(false);
-        return
-    }
-
     try {
-      const response = await fetch('/api/update-json', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          filename: 'users.json',
-          data: { ...values, id: new Date().toISOString() },
-        }),
-      });
+      // Create user with Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const firebaseUser = userCredential.user;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save user data');
-      }
+      // Create a user profile document in Firestore
+      const userProfile = {
+        name: values.name,
+        email: values.email,
+      };
+      await setDoc(doc(db, "users", firebaseUser.uid), userProfile);
+      
+      setUser({ id: firebaseUser.uid, ...userProfile });
 
       toast({
         title: "Signup Successful",
@@ -101,13 +67,15 @@ export function SignupForm() {
       });
       router.push("/dashboard");
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      const errorMessage = error.code === 'auth/email-already-in-use' 
+        ? "An account with this email already exists."
+        : error.message || "An unknown error occurred.";
       toast({
         variant: "destructive",
         title: "Signup Failed",
-        description: `An error occurred while creating your account: ${errorMessage}`,
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);

@@ -28,6 +28,9 @@ import { useTransactionStore } from "@/store/transactions";
 import { incomeCategories, expenseCategories } from "@/data/mock-data";
 import { Transaction } from "@/types";
 import { useUserStore } from "@/store/user";
+import { db } from "@/firebase/config";
+import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+
 
 const formSchema = z.object({
   description: z.string().min(1, "Description is required."),
@@ -94,37 +97,29 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
     }
     setIsLoading(true);
 
-    if (isEditMode) {
-      const updatedTransaction: Transaction = {
-        ...transaction,
+    if (isEditMode && transaction) {
+      const transactionRef = doc(db, "transactions", transaction.id);
+      const updatedTransactionData = {
         ...values,
         date: format(values.date, "yyyy-MM-dd"),
       };
       try {
-         await fetch('/api/update-json', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: 'transactions.json', data: updatedTransaction, action: 'UPDATE', id: transaction.id }),
-        });
-        updateTransaction(updatedTransaction);
+        await updateDoc(transactionRef, updatedTransactionData);
+        updateTransaction({ ...transaction, ...updatedTransactionData });
         toast({ title: "Success", description: "Transaction updated successfully." });
       } catch (error) {
         toast({ variant: "destructive", title: "Error", description: "Failed to update transaction." });
       }
     } else {
-      const newTransaction: Omit<Transaction, 'userId'> = {
-        id: new Date().toISOString(),
+       const newTransactionData = {
+        userId: user.id,
+        type,
         ...values,
         date: format(values.date, "yyyy-MM-dd"),
-        type,
       };
-      const newTransactionWithUser = { ...newTransaction, userId: user.id };
       try {
-        await fetch('/api/update-json', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: 'transactions.json', data: newTransactionWithUser, action: 'ADD' }),
-        });
+        const docRef = await addDoc(collection(db, "transactions"), newTransactionData);
+        const newTransaction: Transaction = { id: docRef.id, ...newTransactionData };
         addTransaction(newTransaction);
         toast({ title: "Success", description: `${type === 'income' ? 'Income' : 'Expense'} added successfully.` });
       } catch (error) {

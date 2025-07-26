@@ -14,6 +14,8 @@ import { useUserStore } from "@/store/user";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { TransactionForm } from "./transaction-form";
+import { db } from "@/firebase/config";
+import { doc, deleteDoc } from "firebase/firestore";
 
 export function TransactionsClient() {
   const allTransactions = useTransactionStore((state) => state.getFilteredTransactions('all'));
@@ -27,11 +29,7 @@ export function TransactionsClient() {
 
   const handleDelete = async (id: string) => {
     try {
-      await fetch('/api/update-json', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: 'transactions.json', id, action: 'DELETE', data: {}}),
-      });
+      await deleteDoc(doc(db, "transactions", id));
       deleteTransaction(id);
       toast({
         title: "Success",

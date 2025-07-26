@@ -17,14 +17,21 @@ import { ThemeToggle } from "./theme-toggle";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useUserStore } from "@/store/user";
+import { auth } from "@/firebase/config";
+import { signOut } from "firebase/auth";
 
 export function UserNav() {
   const router = useRouter();
   const { user, setUser } = useUserStore();
 
-  const handleLogout = () => {
-    setUser(null);
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+        await signOut(auth);
+        setUser(null);
+        router.push("/login");
+    } catch (error) {
+        console.error("Error signing out: ", error);
+    }
   };
 
   return (

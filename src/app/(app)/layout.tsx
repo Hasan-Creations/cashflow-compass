@@ -8,53 +8,78 @@ import { CurrentBalance } from "@/components/current-balance";
 import { useTransactionStore } from "@/store/transactions";
 import { useSavingGoalStore } from "@/store/goals";
 import { useRecurringExpenseStore } from "@/store/recurring";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/user";
 import { useRouter } from "next/navigation";
-import { Transaction, SavingGoal, RecurringExpense } from "@/types";
+import { Transaction, SavingGoal, RecurringExpense, User } from "@/types";
+import { auth, db } from "@/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useUserStore();
+  const { user, setUser } = useUserStore();
   const router = useRouter();
   const setTransactions = useTransactionStore((state) => state.setTransactions);
   const setSavingGoals = useSavingGoalStore((state) => state.setSavingGoals);
   const setRecurringExpenses = useRecurringExpenseStore((state) => state.setRecurringExpenses);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
-    } else {
-      const fetchData = async () => {
-        try {
-          const [transactionsRes, goalsRes, recurringRes] = await Promise.all([
-            fetch('/api/transactions'),
-            fetch('/api/goals'),
-            fetch('/api/recurring'),
-          ]);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // User is signed in.
+        const userDocRef = doc(db, "users", firebaseUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
 
-          if (!transactionsRes.ok || !goalsRes.ok || !recurringRes.ok) {
-            throw new Error('Failed to fetch data');
-          }
-          
-          const transactions: Transaction[] = await transactionsRes.json();
-          const goals: SavingGoal[] = await goalsRes.json();
-          const recurring: RecurringExpense[] = await recurringRes.json();
-
-          setTransactions(transactions);
-          setSavingGoals(goals);
-          setRecurringExpenses(recurring);
-        } catch (error) {
-            console.error("Failed to load data from APIs", error);
+        if (userDocSnap.exists()) {
+          const currentUser = { id: firebaseUser.uid, ...userDocSnap.data() } as Omit<User, 'password'>;
+          setUser(currentUser);
         }
-      };
-      
-      fetchData();
-    }
-  }, [user, router, setTransactions, setSavingGoals, setRecurringExpenses]);
+        
+        // Fetch data from Firestore
+        const fetchData = async () => {
+          try {
+            // Transactions
+            const transQuery = query(collection(db, "transactions"), where("userId", "==", firebaseUser.uid));
+            const transSnapshot = await getDocs(transQuery);
+            const transactions = transSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Transaction[];
+            setTransactions(transactions);
 
-  // Render nothing or a loading spinner if there's no user
-  if (!user) {
-    return null; 
+            // Saving Goals
+            const goalsQuery = query(collection(db, "saving_goals"), where("userId", "==", firebaseUser.uid));
+            const goalsSnapshot = await getDocs(goalsQuery);
+            const goals = goalsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as SavingGoal[];
+            setSavingGoals(goals);
+
+            // Recurring Expenses
+            const recurringQuery = query(collection(db, "recurring_expenses"), where("userId", "==", firebaseUser.uid));
+            const recurringSnapshot = await getDocs(recurringQuery);
+            const recurring = recurringSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as RecurringExpense[];
+            setRecurringExpenses(recurring);
+
+          } catch (error) {
+            console.error("Failed to load data from Firestore", error);
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchData();
+      } else {
+        // User is signed out.
+        setUser(null);
+        setTransactions([]);
+        setSavingGoals([]);
+        setRecurringExpenses([]);
+        router.push('/login');
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router, setUser, setTransactions, setSavingGoals, setRecurringExpenses]);
+
+  if (loading || !user) {
+    return null; // or a loading spinner
   }
 
   return (

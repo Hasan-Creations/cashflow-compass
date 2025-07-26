@@ -6,7 +6,7 @@ import { useUserStore } from './user';
 type RecurringExpenseState = {
   recurringExpenses: RecurringExpense[];
   setRecurringExpenses: (expenses: RecurringExpense[]) => void;
-  addRecurringExpense: (expense: Omit<RecurringExpense, 'userId'>) => void;
+  addRecurringExpense: (expense: RecurringExpense) => void;
   getUserRecurringExpenses: () => RecurringExpense[];
 };
 
@@ -14,10 +14,7 @@ export const useRecurringExpenseStore = create<RecurringExpenseState>((set, get)
   recurringExpenses: [],
   setRecurringExpenses: (expenses) => set({ recurringExpenses: expenses }),
   addRecurringExpense: (expense) => {
-    const userId = useUserStore.getState().user?.id;
-    if (!userId) return;
-    const newExpense = { ...expense, userId };
-    set((state) => ({ recurringExpenses: [newExpense, ...state.recurringExpenses] }));
+    set((state) => ({ recurringExpenses: [expense, ...state.recurringExpenses] }));
   },
   getUserRecurringExpenses: () => {
     const { recurringExpenses } = get();

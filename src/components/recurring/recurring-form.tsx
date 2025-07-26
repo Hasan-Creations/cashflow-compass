@@ -28,6 +28,8 @@ import { expenseCategories } from "@/data/mock-data";
 import { RecurringExpense } from "@/types";
 import { useRecurringExpenseStore } from "@/store/recurring";
 import { useUserStore } from "@/store/user";
+import { db } from "@/firebase/config";
+import { addDoc, collection } from "firebase/firestore";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -68,27 +70,21 @@ export function RecurringForm() {
         return;
     }
     setIsLoading(true);
-    const newRecurringExpense: Omit<RecurringExpense, "userId"> = {
-      id: new Date().toISOString(),
-      ...values,
+    const newRecurringExpenseData = {
+      userId: user.id,
+      name: values.name,
+      amount: values.amount,
+      category: values.category,
+      frequency: values.frequency,
       nextPaymentDate: format(values.nextPaymentDate, "yyyy-MM-dd"),
     };
 
-    const newRecurringExpenseWithUser = { ...newRecurringExpense, userId: user.id };
-
     try {
-      const response = await fetch('/api/update-json', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            filename: 'recurring.json', 
-            data: newRecurringExpenseWithUser
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save recurring expense');
-      }
+      const docRef = await addDoc(collection(db, "recurring_expenses"), newRecurringExpenseData);
+      const newRecurringExpense: RecurringExpense = {
+        id: docRef.id,
+        ...newRecurringExpenseData,
+      };
       
       addRecurringExpense(newRecurringExpense);
       toast({ title: "Success", description: "Recurring expense added successfully." });

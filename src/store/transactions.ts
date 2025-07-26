@@ -7,7 +7,7 @@ type TransactionState = {
   transactions: Transaction[];
   balance: number;
   setTransactions: (transactions: Transaction[]) => void;
-  addTransaction: (transaction: Omit<Transaction, 'userId'>) => void;
+  addTransaction: (transaction: Transaction) => void;
   updateTransaction: (updatedTransaction: Transaction) => void;
   deleteTransaction: (id: string) => void;
   calculateBalance: () => void;
@@ -20,10 +20,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   balance: 0,
   setTransactions: (transactions) => set({ transactions }),
   addTransaction: (transaction) => {
-    const userId = useUserStore.getState().user?.id;
-    if (!userId) return;
-    const newTransaction = { ...transaction, userId };
-    set((state) => ({ transactions: [newTransaction, ...state.transactions] }));
+    set((state) => ({ transactions: [transaction, ...state.transactions] }));
   },
   updateTransaction: (updatedTransaction) => {
     set((state) => ({

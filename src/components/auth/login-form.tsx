@@ -15,11 +15,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { User } from "@/types";
 import { useUserStore } from "@/store/user";
+import { auth, db } from "@/firebase/config";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { User } from "@/types";
 
 
 const formSchema = z.object({
@@ -31,29 +34,7 @@ export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
   const { setUser } = useUserStore();
-
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (error) {
-        console.error(error);
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Could not load user data. Please try again later.",
-        });
-      }
-    }
-    fetchUsers();
-  }, [toast]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,29 +44,39 @@ export function LoginForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     
-    const user = users.find(u => u.email === values.email && u.password === values.password);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const firebaseUser = userCredential.user;
 
-    setTimeout(() => {
-      setIsLoading(false);
-      if (user) {
+      // Fetch user profile from Firestore
+      const userDocRef = doc(db, "users", firebaseUser.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data() as Omit<User, 'id'>;
+        setUser({ id: firebaseUser.uid, ...userData });
+
         toast({
           title: "Login Successful",
           description: "Welcome back!",
         });
-        const { password, ...userToStore } = user;
-        setUser(userToStore);
         router.push("/dashboard");
       } else {
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: "Invalid email or password.",
-        });
+         throw new Error("User profile not found.");
       }
-    }, 1000);
+
+    } catch (error: any) {
+       toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Invalid email or password.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

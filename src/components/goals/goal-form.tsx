@@ -26,6 +26,8 @@ import { cn } from "@/lib/utils";
 import { useSavingGoalStore } from "@/store/goals";
 import { SavingGoal } from "@/types";
 import { useUserStore } from "@/store/user";
+import { db } from "@/firebase/config";
+import { addDoc, collection } from "firebase/firestore";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -67,24 +69,22 @@ export function SavingGoalForm() {
         return;
     }
     setIsLoading(true);
-    const newSavingGoal: Omit<SavingGoal, "userId"> = {
-      id: new Date().toISOString(), // simple unique id
-      ...values,
+    
+    const newSavingGoalData = {
+      userId: user.id,
+      name: values.name,
+      targetAmount: values.targetAmount,
+      currentAmount: values.currentAmount,
       deadline: format(values.deadline, "yyyy-MM-dd"),
     };
 
-    const newSavingGoalWithUser = { ...newSavingGoal, userId: user.id };
-
     try {
-      const response = await fetch('/api/update-json', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: 'goals.json', data: newSavingGoalWithUser }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save saving goal');
-      }
+      const docRef = await addDoc(collection(db, "saving_goals"), newSavingGoalData);
+      
+      const newSavingGoal: SavingGoal = {
+        id: docRef.id,
+        ...newSavingGoalData,
+      };
 
       addSavingGoal(newSavingGoal);
       toast({ title: "Success", description: "Saving goal added successfully." });
