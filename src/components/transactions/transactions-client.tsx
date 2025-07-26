@@ -1,23 +1,55 @@
 
 "use client";
 
-import { File, ListFilter } from "lucide-react";
+import { File, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useTransactionStore } from "@/store/transactions";
 import { Transaction } from "@/types";
 import { useUserStore } from "@/store/user";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { TransactionForm } from "./transaction-form";
 
 export function TransactionsClient() {
   const allTransactions = useTransactionStore((state) => state.getFilteredTransactions('all'));
   const incomeTransactions = useTransactionStore((state) => state.getFilteredTransactions('income'));
   const expenseTransactions = useTransactionStore((state) => state.getFilteredTransactions('expense'));
+  const { deleteTransaction } = useTransactionStore();
   const { currency } = useUserStore();
   const { toast } = useToast();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | undefined>(undefined);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await fetch('/api/update-json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: 'transactions.json', id, action: 'DELETE', data: {}}),
+      });
+      deleteTransaction(id);
+      toast({
+        title: "Success",
+        description: "Transaction deleted successfully.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete transaction.",
+      });
+    }
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsEditDialogOpen(true);
+  };
 
   const handleExport = () => {
     const transactions = allTransactions;
@@ -62,6 +94,7 @@ export function TransactionsClient() {
           <TableHead className="hidden md:table-cell">Category</TableHead>
           <TableHead className="hidden lg:table-cell">Date</TableHead>
           <TableHead className="text-right">Amount</TableHead>
+          <TableHead className="w-[50px]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -89,10 +122,24 @@ export function TransactionsClient() {
                 {transaction.type === "income" ? "+ " : "- "}
                 {currency}{transaction.amount.toFixed(2)}
             </TableCell>
+             <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleEdit(transaction)}>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDelete(transaction.id)} className="text-destructive">Delete</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
           </TableRow>
         )) : (
             <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                     No transactions found.
                 </TableCell>
             </TableRow>
@@ -102,35 +149,45 @@ export function TransactionsClient() {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Transactions</CardTitle>
-        <CardDescription>
-          Manage your expenses and income.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="all">
-          <div className="flex items-center">
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="income">Income</TabsTrigger>
-              <TabsTrigger value="expense">Expense</TabsTrigger>
-            </TabsList>
-            <div className="ml-auto flex items-center gap-2">
-              <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handleExport}>
-                <File className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Export
-                </span>
-              </Button>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Transactions</CardTitle>
+          <CardDescription>
+            Manage your expenses and income.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="all">
+            <div className="flex items-center">
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="income">Income</TabsTrigger>
+                <TabsTrigger value="expense">Expense</TabsTrigger>
+              </TabsList>
+              <div className="ml-auto flex items-center gap-2">
+                <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handleExport}>
+                  <File className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Export
+                  </span>
+                </Button>
+              </div>
             </div>
-          </div>
-          <TabsContent value="all">{renderTable(allTransactions)}</TabsContent>
-          <TabsContent value="income">{renderTable(incomeTransactions)}</TabsContent>
-          <TabsContent value="expense">{renderTable(expenseTransactions)}</TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+            <TabsContent value="all">{renderTable(allTransactions)}</TabsContent>
+            <TabsContent value="income">{renderTable(incomeTransactions)}</TabsContent>
+            <TabsContent value="expense">{renderTable(expenseTransactions)}</TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      {selectedTransaction && (
+        <TransactionForm
+          type={selectedTransaction.type}
+          open={isEditDialogOpen}
+          setOpen={setIsEditDialogOpen}
+          transaction={selectedTransaction}
+        />
+      )}
+    </>
   );
 }

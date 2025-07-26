@@ -8,6 +8,8 @@ type TransactionState = {
   balance: number;
   setTransactions: (transactions: Transaction[]) => void;
   addTransaction: (transaction: Omit<Transaction, 'userId'>) => void;
+  updateTransaction: (updatedTransaction: Transaction) => void;
+  deleteTransaction: (id: string) => void;
   calculateBalance: () => void;
   getFilteredTransactions: (type: 'all' | 'income' | 'expense') => Transaction[];
   getUserTransactions: () => Transaction[];
@@ -22,6 +24,18 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     if (!userId) return;
     const newTransaction = { ...transaction, userId };
     set((state) => ({ transactions: [newTransaction, ...state.transactions] }));
+  },
+  updateTransaction: (updatedTransaction) => {
+    set((state) => ({
+      transactions: state.transactions.map((t) =>
+        t.id === updatedTransaction.id ? updatedTransaction : t
+      ),
+    }));
+  },
+  deleteTransaction: (id) => {
+    set((state) => ({
+      transactions: state.transactions.filter((t) => t.id !== id),
+    }));
   },
   calculateBalance: () => {
     const userTransactions = get().getUserTransactions();

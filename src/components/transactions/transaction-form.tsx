@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,14 +41,21 @@ const formSchema = z.object({
 
 interface TransactionFormProps {
   type: "income" | "expense";
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
+  transaction?: Transaction;
 }
 
-export function TransactionForm({ type }: TransactionFormProps) {
+export function TransactionForm({ type, open: externalOpen, setOpen: setExternalOpen, transaction }: TransactionFormProps) {
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const addTransaction = useTransactionStore((state) => state.addTransaction);
+  const { addTransaction, updateTransaction } = useTransactionStore();
   const user = useUserStore((state) => state.user);
+
+  const isEditMode = transaction !== undefined;
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,55 +67,188 @@ export function TransactionForm({ type }: TransactionFormProps) {
     },
   });
 
+  useEffect(() => {
+    if (isEditMode) {
+      form.reset({
+        description: transaction.description,
+        amount: transaction.amount,
+        date: parseISO(transaction.date),
+        category: transaction.category,
+      });
+    } else {
+      form.reset({
+        description: "",
+        amount: 0,
+        date: new Date(),
+        category: "",
+      });
+    }
+  }, [transaction, isEditMode, form]);
+
   const categories = type === "income" ? incomeCategories : expenseCategories;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "You must be logged in to add a transaction.",
-        });
+        toast({ variant: "destructive", title: "Error", description: "You must be logged in." });
         return;
     }
-
     setIsLoading(true);
-    const newTransaction: Omit<Transaction, 'userId'> = {
-      id: new Date().toISOString(), // simple unique id
-      ...values,
-      date: format(values.date, "yyyy-MM-dd"),
-      type,
-    };
 
-    const newTransactionWithUser = { ...newTransaction, userId: user.id };
-
-    try {
-      const response = await fetch('/api/update-json', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: 'transactions.json', data: newTransactionWithUser }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save transaction');
+    if (isEditMode) {
+      const updatedTransaction: Transaction = {
+        ...transaction,
+        ...values,
+        date: format(values.date, "yyyy-MM-dd"),
+      };
+      try {
+         await fetch('/api/update-json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: 'transactions.json', data: updatedTransaction, action: 'UPDATE', id: transaction.id }),
+        });
+        updateTransaction(updatedTransaction);
+        toast({ title: "Success", description: "Transaction updated successfully." });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Error", description: "Failed to update transaction." });
       }
-
-      addTransaction(newTransaction);
-      toast({ title: "Success", description: `${type === 'income' ? 'Income' : 'Expense'} added successfully.` });
-      setOpen(false);
-      form.reset();
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to add ${type}. Please try again.`,
-      });
-    } finally {
-      setIsLoading(false);
+    } else {
+      const newTransaction: Omit<Transaction, 'userId'> = {
+        id: new Date().toISOString(),
+        ...values,
+        date: format(values.date, "yyyy-MM-dd"),
+        type,
+      };
+      const newTransactionWithUser = { ...newTransaction, userId: user.id };
+      try {
+        await fetch('/api/update-json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: 'transactions.json', data: newTransactionWithUser, action: 'ADD' }),
+        });
+        addTransaction(newTransaction);
+        toast({ title: "Success", description: `${type === 'income' ? 'Income' : 'Expense'} added successfully.` });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Error", description: `Failed to add ${type}.` });
+      }
     }
+
+    setIsLoading(false);
+    setOpen(false);
+    form.reset();
   }
 
+  const dialogContent = (
+    <DialogContent className="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>
+          {isEditMode ? `Edit ${type}` : (type === "income" ? "Add New Income" : "Log New Expense")}
+        </DialogTitle>
+        <DialogDescription>
+          {isEditMode ? "Update the details for your transaction." : `Enter the details for your new ${type}.`}
+        </DialogDescription>
+      </DialogHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Input placeholder={`e.g. ${type === 'income' ? 'Monthly Salary' : 'Coffee'}`} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amount</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="0.00" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                 <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Date</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <DialogFooter>
+            <Button type="submit" disabled={isLoading}>
+               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {isEditMode ? 'Save Changes' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </DialogContent>
+  );
+
+  // If the form is for editing, we control it externally (from the table row)
+  if (isEditMode) {
+    return <Dialog open={open} onOpenChange={setOpen}>{dialogContent}</Dialog>
+  }
+
+  // If it's for creating, it controls its own state.
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -117,115 +257,7 @@ export function TransactionForm({ type }: TransactionFormProps) {
           {type === "income" ? "Add Income" : "Log Expense"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            {type === "income" ? "Add New Income" : "Log New Expense"}
-          </DialogTitle>
-          <DialogDescription>
-            Enter the details for your new {type}.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input placeholder={`e.g. ${type === 'income' ? 'Monthly Salary' : 'Coffee'}`} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="0.00" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map(cat => (
-                        <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <Button type="submit" disabled={isLoading}>
-                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Save
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+      {dialogContent}
     </Dialog>
   );
 }
