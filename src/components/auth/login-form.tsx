@@ -14,10 +14,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import users from '@/data/users.json';
+import { User } from "@/types";
+
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -28,6 +29,28 @@ export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error(error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not load user data. Please try again later.",
+        });
+      }
+    }
+    fetchUsers();
+  }, [toast]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

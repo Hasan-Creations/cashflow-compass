@@ -15,11 +15,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import users from '@/data/users.json';
-
+import { User } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -31,6 +30,29 @@ export function SignupForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error(error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not load user data. Please try again later.",
+        });
+      }
+    }
+    fetchUsers();
+  }, [toast]);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,8 +66,6 @@ export function SignupForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    // This check runs on the client-side before hitting the API.
-    // The API itself doesn't check for duplicates.
     const existingUser = users.find(u => u.email === values.email);
 
     if (existingUser) {
@@ -66,8 +86,6 @@ export function SignupForm() {
         },
         body: JSON.stringify({
           filename: 'users.json',
-          // A real app would hash the password, but we store it in plaintext for simplicity.
-          // A real app would also use a more robust ID generation scheme.
           data: { ...values, id: new Date().toISOString() },
         }),
       });

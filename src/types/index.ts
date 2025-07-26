@@ -29,3 +29,10 @@ export type RecurringExpense = {
     frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
     nextPaymentDate: string;
 }
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  password?: string; // Password should not be sent to client
+}
