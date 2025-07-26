@@ -75,7 +75,7 @@ export function RecentTransactions() {
                 </TableCell>
                 <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : ''}`}>
                   {transaction.type === "income" ? "+ " : "- "}
-                  ${transaction.amount.toFixed(2)}
+                  ₨{transaction.amount.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}

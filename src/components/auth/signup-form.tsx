@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,6 +44,8 @@ export function SignupForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
+    // This check runs on the client-side before hitting the API.
+    // The API itself doesn't check for duplicates.
     const existingUser = users.find(u => u.email === values.email);
 
     if (existingUser) {
@@ -63,12 +66,15 @@ export function SignupForm() {
         },
         body: JSON.stringify({
           filename: 'users.json',
-          data: { ...values, id: String(users.length + 1) },
+          // A real app would hash the password, but we store it in plaintext for simplicity.
+          // A real app would also use a more robust ID generation scheme.
+          data: { ...values, id: new Date().toISOString() },
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save user data');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save user data');
       }
 
       toast({
@@ -79,10 +85,11 @@ export function SignupForm() {
 
     } catch (error) {
       console.error(error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast({
         variant: "destructive",
         title: "Signup Failed",
-        description: "An error occurred while creating your account.",
+        description: `An error occurred while creating your account: ${errorMessage}`,
       });
     } finally {
       setIsLoading(false);

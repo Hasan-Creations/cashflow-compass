@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
+
+import { RecurringForm } from "@/components/recurring/recurring-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { mockRecurringExpenses } from "@/data/mock-data";
-import { PlusCircle } from "lucide-react";
 
 export default function RecurringPage() {
   return (
@@ -16,9 +16,7 @@ export default function RecurringPage() {
               Manage your subscriptions and recurring payments.
             </CardDescription>
           </div>
-          <Button size="sm" className="gap-1">
-            <PlusCircle className="h-4 w-4" /> Add Recurring
-          </Button>
+          <RecurringForm />
         </div>
       </CardHeader>
       <CardContent>
@@ -42,7 +40,7 @@ export default function RecurringPage() {
                 <TableCell className="capitalize">{expense.frequency}</TableCell>
                 <TableCell>{expense.nextPaymentDate}</TableCell>
                 <TableCell className="text-right font-medium">
-                  ${expense.amount.toFixed(2)}
+                  ₨{expense.amount.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}

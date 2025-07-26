@@ -1,3 +1,4 @@
+
 import { type Transaction, type Category, type SavingGoal, type RecurringExpense } from "@/types";
 import transactions from './transactions.json';
 import goals from './goals.json';
@@ -20,6 +21,7 @@ export const categories: Category[] = [
     { id: 'shopping', name: 'Shopping', icon: 'shirt' },
     { id: 'health', name: 'Health', icon: 'heart-pulse' },
     { id: 'housing', name: 'Housing', icon: 'home' },
+    { id: 'education', name: 'Education', icon: 'book-marked' },
     { id: 'other', name: 'Other', icon: 'ellipsis' },
 ];
 

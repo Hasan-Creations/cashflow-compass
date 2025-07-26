@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": "2025-07-26T09:42:25.845Z",
+    "description": "salary ",
+    "amount": 20000,
+    "date": "2025-07-26",
+    "category": "Salary",
+    "type": "income"
+  },
+  {
+    "id": "2025-07-26T09:43:59.267Z",
+    "description": "FEE",
+    "amount": 5000,
+    "date": "2025-07-26",
+    "category": "Transport",
+    "type": "expense"
+  }
+]
