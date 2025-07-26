@@ -31,11 +31,10 @@ import { useUserStore } from "@/store/user";
 import { TransactionForm } from "@/components/transactions/transaction-form";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { db } from "@/firebase/config";
-import { doc, deleteDoc } from "firebase/firestore";
+import { deleteTransaction } from "@/lib/firebase/transactions";
 
 export function RecentTransactions() {
-  const { getUserTransactions, deleteTransaction } = useTransactionStore();
+  const { getUserTransactions, deleteTransaction: deleteFromStore } = useTransactionStore();
   const { currency } = useUserStore();
   const transactions = getUserTransactions();
   const { toast } = useToast();
@@ -44,8 +43,8 @@ export function RecentTransactions() {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteDoc(doc(db, "transactions", id));
-      deleteTransaction(id);
+      await deleteTransaction(id);
+      deleteFromStore(id);
       toast({
         title: "Success",
         description: "Transaction deleted successfully.",

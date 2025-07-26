@@ -24,10 +24,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Loader2, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSavingGoalStore } from "@/store/goals";
-import { SavingGoal } from "@/types";
 import { useUserStore } from "@/store/user";
-import { db } from "@/firebase/config";
-import { addDoc, collection } from "firebase/firestore";
+import { addGoal } from "@/lib/firebase/goals";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -79,13 +77,7 @@ export function SavingGoalForm() {
     };
 
     try {
-      const docRef = await addDoc(collection(db, "saving_goals"), newSavingGoalData);
-      
-      const newSavingGoal: SavingGoal = {
-        id: docRef.id,
-        ...newSavingGoalData,
-      };
-
+      const newSavingGoal = await addGoal(newSavingGoalData);
       addSavingGoal(newSavingGoal);
       toast({ title: "Success", description: "Saving goal added successfully." });
       setOpen(false);

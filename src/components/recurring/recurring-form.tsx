@@ -25,11 +25,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CalendarIcon, Loader2, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { expenseCategories } from "@/data/mock-data";
-import { RecurringExpense } from "@/types";
 import { useRecurringExpenseStore } from "@/store/recurring";
 import { useUserStore } from "@/store/user";
-import { db } from "@/firebase/config";
-import { addDoc, collection } from "firebase/firestore";
+import { addRecurring } from "@/lib/firebase/recurring";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -80,12 +78,7 @@ export function RecurringForm() {
     };
 
     try {
-      const docRef = await addDoc(collection(db, "recurring_expenses"), newRecurringExpenseData);
-      const newRecurringExpense: RecurringExpense = {
-        id: docRef.id,
-        ...newRecurringExpenseData,
-      };
-      
+      const newRecurringExpense = await addRecurring(newRecurringExpenseData);
       addRecurringExpense(newRecurringExpense);
       toast({ title: "Success", description: "Recurring expense added successfully." });
       setOpen(false);

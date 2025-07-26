@@ -11,10 +11,13 @@ import { useRecurringExpenseStore } from "@/store/recurring";
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/user";
 import { useRouter } from "next/navigation";
-import { Transaction, SavingGoal, RecurringExpense, User } from "@/types";
+import { User } from "@/types";
 import { auth, db } from "@/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
+import { getUserTransactions } from "@/lib/firebase/transactions";
+import { getUserGoals } from "@/lib/firebase/goals";
+import { getUserRecurring } from "@/lib/firebase/recurring";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, setUser } = useUserStore();
@@ -39,22 +42,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         // Fetch data from Firestore
         const fetchData = async () => {
           try {
-            // Transactions
-            const transQuery = query(collection(db, "transactions"), where("userId", "==", firebaseUser.uid));
-            const transSnapshot = await getDocs(transQuery);
-            const transactions = transSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Transaction[];
+            const [transactions, goals, recurring] = await Promise.all([
+              getUserTransactions(firebaseUser.uid),
+              getUserGoals(firebaseUser.uid),
+              getUserRecurring(firebaseUser.uid),
+            ]);
             setTransactions(transactions);
-
-            // Saving Goals
-            const goalsQuery = query(collection(db, "saving_goals"), where("userId", "==", firebaseUser.uid));
-            const goalsSnapshot = await getDocs(goalsQuery);
-            const goals = goalsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as SavingGoal[];
             setSavingGoals(goals);
-
-            // Recurring Expenses
-            const recurringQuery = query(collection(db, "recurring_expenses"), where("userId", "==", firebaseUser.uid));
-            const recurringSnapshot = await getDocs(recurringQuery);
-            const recurring = recurringSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as RecurringExpense[];
             setRecurringExpenses(recurring);
 
           } catch (error) {

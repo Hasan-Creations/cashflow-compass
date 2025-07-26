@@ -28,9 +28,7 @@ import { useTransactionStore } from "@/store/transactions";
 import { incomeCategories, expenseCategories } from "@/data/mock-data";
 import { Transaction } from "@/types";
 import { useUserStore } from "@/store/user";
-import { db } from "@/firebase/config";
-import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
-
+import { addTransaction, updateTransaction as updateTransactionInDb } from "@/lib/firebase/transactions";
 
 const formSchema = z.object({
   description: z.string().min(1, "Description is required."),
@@ -53,7 +51,7 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
   const { toast } = useToast();
   const [internalOpen, setInternalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { addTransaction, updateTransaction } = useTransactionStore();
+  const { addTransaction: addTransactionToStore, updateTransaction: updateTransactionInStore } = useTransactionStore();
   const user = useUserStore((state) => state.user);
 
   const isEditMode = transaction !== undefined;
@@ -98,14 +96,13 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
     setIsLoading(true);
 
     if (isEditMode && transaction) {
-      const transactionRef = doc(db, "transactions", transaction.id);
       const updatedTransactionData = {
         ...values,
         date: format(values.date, "yyyy-MM-dd"),
       };
       try {
-        await updateDoc(transactionRef, updatedTransactionData);
-        updateTransaction({ ...transaction, ...updatedTransactionData });
+        await updateTransactionInDb(transaction.id, updatedTransactionData);
+        updateTransactionInStore({ ...transaction, ...updatedTransactionData });
         toast({ title: "Success", description: "Transaction updated successfully." });
       } catch (error) {
         toast({ variant: "destructive", title: "Error", description: "Failed to update transaction." });
@@ -118,9 +115,8 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
         date: format(values.date, "yyyy-MM-dd"),
       };
       try {
-        const docRef = await addDoc(collection(db, "transactions"), newTransactionData);
-        const newTransaction: Transaction = { id: docRef.id, ...newTransactionData };
-        addTransaction(newTransaction);
+        const newTransaction = await addTransaction(newTransactionData);
+        addTransactionToStore(newTransaction);
         toast({ title: "Success", description: `${type === 'income' ? 'Income' : 'Expense'} added successfully.` });
       } catch (error) {
         toast({ variant: "destructive", title: "Error", description: `Failed to add ${type}.` });
