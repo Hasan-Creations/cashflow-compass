@@ -32,6 +32,7 @@ import { TransactionForm } from "@/components/transactions/transaction-form";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { deleteTransaction } from "@/lib/firebase/transactions";
+import { Transaction } from "@/types";
 
 export function RecentTransactions() {
   const { getUserTransactions, deleteTransaction: deleteFromStore } = useTransactionStore();
@@ -39,7 +40,7 @@ export function RecentTransactions() {
   const transactions = getUserTransactions();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | undefined>(undefined);
 
   const handleDelete = async (id: string) => {
     try {
@@ -58,7 +59,7 @@ export function RecentTransactions() {
     }
   };
 
-  const handleEdit = (transaction: any) => {
+  const handleEdit = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setIsEditDialogOpen(true);
   };
@@ -87,7 +88,7 @@ export function RecentTransactions() {
                 <TableHead>Description</TableHead>
                 <TableHead className="hidden sm:table-cell">Type</TableHead>
                 <TableHead className="hidden sm:table-cell">Category</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
+                <TableHead>Date</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead className="w-[50px]">Actions</TableHead>
               </TableRow>
@@ -110,7 +111,7 @@ export function RecentTransactions() {
                       {transaction.category}
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell>
                     {transaction.date}
                   </TableCell>
                   <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : ''}`}>

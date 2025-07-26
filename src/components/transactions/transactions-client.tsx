@@ -89,7 +89,7 @@ export function TransactionsClient() {
           <TableHead>Description</TableHead>
           <TableHead className="hidden sm:table-cell">Type</TableHead>
           <TableHead className="hidden md:table-cell">Category</TableHead>
-          <TableHead className="hidden lg:table-cell">Date</TableHead>
+          <TableHead>Date</TableHead>
           <TableHead className="text-right">Amount</TableHead>
           <TableHead className="w-[50px]">Actions</TableHead>
         </TableRow>
@@ -112,7 +112,7 @@ export function TransactionsClient() {
                 {transaction.category}
               </Badge>
             </TableCell>
-            <TableCell className="hidden lg:table-cell">
+            <TableCell>
               {transaction.date}
             </TableCell>
             <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-500' : ''}`}>

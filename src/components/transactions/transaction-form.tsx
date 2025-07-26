@@ -69,7 +69,7 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
   });
 
   useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && transaction) {
       form.reset({
         description: transaction.description,
         amount: transaction.amount,
@@ -84,7 +84,7 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
         category: "",
       });
     }
-  }, [transaction, isEditMode, form]);
+  }, [transaction, isEditMode]);
 
   const categories = type === "income" ? incomeCategories : expenseCategories;
 
@@ -102,7 +102,7 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
       };
       try {
         await updateTransactionInDb(transaction.id, updatedTransactionData);
-        updateTransactionInStore({ ...transaction, ...updatedTransactionData });
+        updateTransactionInStore({ ...transaction, ...updatedTransactionData, type: transaction.type });
         toast({ title: "Success", description: "Transaction updated successfully." });
       } catch (error) {
         toast({ variant: "destructive", title: "Error", description: "Failed to update transaction." });
@@ -125,7 +125,9 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
 
     setIsLoading(false);
     setOpen(false);
-    form.reset();
+    if (!isEditMode) {
+      form.reset();
+    }
   }
 
   const dialogContent = (
