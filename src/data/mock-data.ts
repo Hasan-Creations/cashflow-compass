@@ -3,22 +3,25 @@ import transactions from './transactions.json';
 import goals from './goals.json';
 import recurring from './recurring.json';
 
+// We are moving away from mock data, but will keep these files for type consistency
+// and potentially for seeding in the future.
 export const mockTransactions: Transaction[] = transactions;
-
-export const mockCategories: Category[] = [
-    { id: '1', name: 'Food', icon: 'pizza' },
-    { id: '2', name: 'Transport', icon: 'bus' },
-    { id: '3', name: 'Entertainment', icon: 'film' },
-    { id: '4', name: 'Groceries', icon: 'shopping-cart' },
-    { id: '5', name: 'Utilities', icon: 'bolt' },
-    { id: '6', name: 'Shopping', icon: 'shirt' },
-    { id: '7', name: 'Health', icon: 'heart-pulse' },
-    { id: '8', name: 'Other', icon: 'ellipsis' },
-    { id: '9', name: 'Salary', icon: 'briefcase' },
-    { id: '10', name: 'Freelance', icon: 'pencil' },
-    { id: '11', name: 'Housing', icon: 'home' },
-]
-
 export const mockSavingGoals: SavingGoal[] = goals;
-
 export const mockRecurringExpenses: RecurringExpense[] = recurring;
+
+export const categories: Category[] = [
+    { id: 'salary', name: 'Salary', icon: 'briefcase' },
+    { id: 'freelance', name: 'Freelance', icon: 'pencil' },
+    { id: 'food', name: 'Food', icon: 'pizza' },
+    { id: 'transport', name: 'Transport', icon: 'bus' },
+    { id: 'entertainment', name: 'Entertainment', icon: 'film' },
+    { id: 'groceries', name: 'Groceries', icon: 'shopping-cart' },
+    { id: 'utilities', name: 'Utilities', icon: 'bolt' },
+    { id: 'shopping', name: 'Shopping', icon: 'shirt' },
+    { id: 'health', name: 'Health', icon: 'heart-pulse' },
+    { id: 'housing', name: 'Housing', icon: 'home' },
+    { id: 'other', name: 'Other', icon: 'ellipsis' },
+];
+
+export const incomeCategories = categories.filter(c => ['salary', 'freelance'].includes(c.id));
+export const expenseCategories = categories.filter(c => !['salary', 'freelance'].includes(c.id));

@@ -1,6 +1,8 @@
+
+"use client";
+
 import Link from "next/link";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,9 +20,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { mockTransactions } from "@/data/mock-data";
+import { useTransactionStore } from "@/store/transactions";
 
 export function RecentTransactions() {
+  const { transactions } = useTransactionStore();
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center">
@@ -49,26 +53,20 @@ export function RecentTransactions() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockTransactions.slice(0, 5).map((transaction) => (
+            {transactions.slice(0, 5).map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell>
                   <div className="font-medium">{transaction.description}</div>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  {transaction.type === "income" ? (
-                    <div className="flex items-center gap-2">
-                      <ArrowUpRight className="h-4 w-4 text-green-500" />
-                      <span>Income</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <ArrowDownLeft className="h-4 w-4 text-red-500" />
-                      <span>Expense</span>
-                    </div>
-                  )}
+                   {transaction.type === "income" ? (
+                         <Badge variant="outline" className="text-green-600 border-green-600/50 bg-green-500/10">Income</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-red-600 border-red-600/50 bg-red-500/10">Expense</Badge>
+                      )}
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <Badge className="text-xs" variant="outline">
+                  <Badge className="text-xs" variant="secondary">
                     {transaction.category}
                   </Badge>
                 </TableCell>
