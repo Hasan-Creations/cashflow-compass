@@ -60,23 +60,30 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      description: transaction?.description || "",
-      amount: transaction?.amount || 0,
-      date: transaction?.date ? parseISO(transaction.date) : new Date(),
-      category: transaction?.category || "",
+      description: "",
+      amount: 0,
+      date: new Date(),
+      category: "",
     },
   });
 
   useEffect(() => {
-    if (isEditMode && transaction) {
+    if (transaction) {
       form.reset({
         description: transaction.description,
         amount: transaction.amount,
         date: parseISO(transaction.date),
         category: transaction.category,
       });
+    } else {
+      form.reset({
+        description: "",
+        amount: 0,
+        date: new Date(),
+        category: "",
+      })
     }
-  }, [transaction]);
+  }, [transaction, open, form]);
 
   const categories = type === "income" ? incomeCategories : expenseCategories;
 
@@ -129,7 +136,7 @@ export function TransactionForm({ type, open: externalOpen, setOpen: setExternal
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto">
           <FormField control={form.control} name="description" render={({ field }) => (
             <FormItem>
               <FormLabel>Description</FormLabel>

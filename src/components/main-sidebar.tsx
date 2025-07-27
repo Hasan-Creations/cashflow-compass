@@ -34,7 +34,7 @@ export function MainSidebar() {
           href="/dashboard"
           className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
         >
-          <img src="/favicon.ico" alt="Cashflow Compass Logo" className="h-5 w-5" />
+          <img src="/favicon.ico" alt="Cashflow Compass Logo" className="h-9 w-9" />
           <span className="sr-only">Dashboard</span>
         </Link>
 
