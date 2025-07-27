@@ -42,7 +42,8 @@ export default function SettingsPage() {
   }, [user]);
 
   const handleExport = () => {
-    if (transactions.length === 0) {
+    const userTransactions = useTransactionStore.getState().getUserTransactions();
+    if (userTransactions.length === 0) {
       toast({
         variant: "destructive",
         title: "No Data",
@@ -54,7 +55,7 @@ export default function SettingsPage() {
     const headers = ["ID", "Type", "Category", "Amount", "Date", "Description"];
     const csvContent = [
       headers.join(','),
-      ...transactions.map(t => [t.id, t.type, t.category, t.amount, t.date, `"${t.description.replace(/"/g, '""')}"`].join(','))
+      ...userTransactions.map(t => [t.id, t.type, t.category, t.amount, t.date, `"${t.description.replace(/"/g, '""')}"`].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -78,7 +79,7 @@ export default function SettingsPage() {
     // This is a placeholder for actual Google Drive integration.
     toast({
       title: "Backup Initiated",
-      description: "Your data is being backed up. In a real app, this would connect to Google Drive.",
+      description: "This is a placeholder. In a real app, this would connect to Google Drive.",
     });
   }
 
