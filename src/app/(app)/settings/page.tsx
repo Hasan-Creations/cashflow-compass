@@ -7,11 +7,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useTransactionStore } from "@/store/transactions";
 import { useToast } from "@/hooks/use-toast";
 import { useUserStore } from "@/store/user";
 import { Loader2 } from "lucide-react";
 import { currencies } from "@/data/mock-data";
+import { deleteUserAccount } from "@/lib/firebase/users";
+import { useRouter } from "next/navigation";
+
 
 export default function SettingsPage() {
   const { transactions } = useTransactionStore();
@@ -19,6 +33,9 @@ export default function SettingsPage() {
   const { user, setUser, currency, setCurrency } = useUserStore();
   const [name, setName] = useState(user?.name || "");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
+
 
   useEffect(() => {
     setName(user?.name || "");
@@ -108,6 +125,28 @@ export default function SettingsPage() {
     }
   }
 
+   const handleDeleteAccount = async () => {
+    if (!user) return;
+    setIsDeleting(true);
+    try {
+      await deleteUserAccount();
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+      });
+      setUser(null);
+      router.push("/login");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Deletion Failed",
+        description: error.message || "Could not delete your account. Please try again.",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-6">
       <div className="grid gap-2">
@@ -181,7 +220,33 @@ export default function SettingsPage() {
             <h4 className="font-semibold">Delete Account</h4>
             <p className="text-sm text-muted-foreground">Permanently delete your account and all associated data.</p>
            </div>
-           <Button variant="destructive">Delete Account</Button>
+           <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" disabled={isDeleting}>
+                  {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Delete Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your
+                    account and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </CardContent>
       </Card>
     </div>
