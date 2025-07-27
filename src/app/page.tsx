@@ -7,9 +7,12 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href="#" className="flex items-center gap-2 font-headline text-lg font-semibold">
-          <Icons.logo className="h-6 w-6 text-primary" />
-          <span>Cashflow Compass</span>
+        <Link
+          href="/dashboard"
+          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+        >
+          <img src="/favicon.ico" alt="Cashflow Compass Logo" className="h-5 w-5" />
+          <span className="sr-only">Dashboard</span>
         </Link>
         <div className="flex items-center gap-2">
           <Button variant="ghost" asChild>
@@ -41,35 +44,35 @@ export default function LandingPage() {
           </div>
         </section>
         <section className="bg-muted/40">
-            <div className="container mx-auto px-4 py-12 md:py-24">
-                 <Image
-                    src="https://placehold.co/1200x600.png"
-                    alt="Dashboard preview"
-                    width={1200}
-                    height={600}
-                    className="mx-auto rounded-xl shadow-2xl"
-                    data-ai-hint="finance dashboard"
-                />
-            </div>
+          <div className="container mx-auto px-4 py-12 md:py-24">
+            <Image
+              src="https://placehold.co/1200x600.png"
+              alt="Dashboard preview"
+              width={1200}
+              height={600}
+              className="mx-auto rounded-xl shadow-2xl"
+              data-ai-hint="finance dashboard"
+            />
+          </div>
         </section>
         <section className="container mx-auto px-4 py-12 md:py-24">
-            <div className="mx-auto grid max-w-5xl items-center gap-8 lg:grid-cols-3 lg:gap-12">
-                <div className="flex flex-col items-center text-center">
-                    <Icons.barChart className="h-12 w-12 text-primary" />
-                    <h3 className="mt-4 font-headline text-xl font-bold">Smart Tracking</h3>
-                    <p className="mt-2 text-muted-foreground">Log expenses and income effortlessly. See where your money goes with beautiful charts.</p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                    <Icons.goals className="h-12 w-12 text-primary" />
-                    <h3 className="mt-4 font-headline text-xl font-bold">Achieve Goals</h3>
-                    <p className="mt-2 text-muted-foreground">Set savings goals and track your progress. We'll cheer you on every step of the way.</p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                    <Icons.recommendations className="h-12 w-12 text-primary" />
-                    <h3 className="mt-4 font-headline text-xl font-bold">AI-Powered Insights</h3>
-                    <p className="mt-2 text-muted-foreground">Get personalized recommendations to cut costs and grow your savings faster.</p>
-                </div>
+          <div className="mx-auto grid max-w-5xl items-center gap-8 lg:grid-cols-3 lg:gap-12">
+            <div className="flex flex-col items-center text-center">
+              <Icons.barChart className="h-12 w-12 text-primary" />
+              <h3 className="mt-4 font-headline text-xl font-bold">Smart Tracking</h3>
+              <p className="mt-2 text-muted-foreground">Log expenses and income effortlessly. See where your money goes with beautiful charts.</p>
             </div>
+            <div className="flex flex-col items-center text-center">
+              <Icons.goals className="h-12 w-12 text-primary" />
+              <h3 className="mt-4 font-headline text-xl font-bold">Achieve Goals</h3>
+              <p className="mt-2 text-muted-foreground">Set savings goals and track your progress. We'll cheer you on every step of the way.</p>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <Icons.recommendations className="h-12 w-12 text-primary" />
+              <h3 className="mt-4 font-headline text-xl font-bold">AI-Powered Insights</h3>
+              <p className="mt-2 text-muted-foreground">Get personalized recommendations to cut costs and grow your savings faster.</p>
+            </div>
+          </div>
         </section>
       </main>
       <footer className="border-t">
