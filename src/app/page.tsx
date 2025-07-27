@@ -9,7 +9,7 @@ export default function LandingPage() {
       <header className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link
           href="/dashboard"
-          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold text-primary-foreground md:text-base"
+          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
         >
           <img src="/favicon.ico" alt="Cashflow Compass Logo" className="h-10 w-10" />
           <span className="sr-only">Dashboard</span>
