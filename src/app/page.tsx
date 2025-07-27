@@ -9,7 +9,7 @@ export default function LandingPage() {
       <header className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link
           href="/dashboard"
-          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+          className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold text-primary-foreground"
         >
           <img src="/favicon.ico" alt="Cashflow Compass Logo" className="h-10 w-10" />
           <span className="sr-only">Dashboard</span>
@@ -46,7 +46,7 @@ export default function LandingPage() {
         <section className="bg-muted/40">
           <div className="container mx-auto px-4 py-12 md:py-24">
             <Image
-              src="https://placehold.co/1200x600.png"
+              src="/bg.png"
               alt="Dashboard preview"
               width={1200}
               height={600}
