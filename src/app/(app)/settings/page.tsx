@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,7 +18,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useTransactionStore } from "@/store/transactions";
 import { useToast } from "@/hooks/use-toast";
 import { useUserStore } from "@/store/user";
 import { Loader2 } from "lucide-react";
@@ -29,7 +27,6 @@ import { useRouter } from "next/navigation";
 
 
 export default function SettingsPage() {
-  const { transactions } = useTransactionStore();
   const { toast } = useToast();
   const { user, setUser, currency, setCurrency } = useUserStore();
   const [name, setName] = useState(user?.name || "");
@@ -41,57 +38,6 @@ export default function SettingsPage() {
   useEffect(() => {
     setName(user?.name || "");
   }, [user]);
-
-  const handleExport = (format: 'csv' | 'xlsx') => {
-    const userTransactions = useTransactionStore.getState().getUserTransactions();
-    if (userTransactions.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "No Data",
-        description: "There are no transactions to export.",
-      });
-      return;
-    }
-
-    const headers = ["ID", "Type", "Category", "Amount", "Date", "Description"];
-    const data = userTransactions.map(t => ({
-      ID: t.id,
-      Type: t.type,
-      Category: t.category,
-      Amount: t.amount,
-      Date: t.date,
-      Description: t.description,
-    }));
-    
-    if (format === 'csv') {
-      const csvContent = [
-        headers.join(','),
-        ...userTransactions.map(t => [t.id, t.type, t.category, t.amount, t.date, `"${t.description.replace(/"/g, '""')}"`].join(','))
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      if (link.download !== undefined) {
-          const url = URL.createObjectURL(blob);
-          link.setAttribute("href", url);
-          link.setAttribute("download", `transactions-${new Date().toISOString().split('T')[0]}.csv`);
-          link.style.visibility = 'hidden';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-      }
-    } else if (format === 'xlsx') {
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-        XLSX.writeFile(workbook, `transactions-${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
-
-     toast({
-        title: "Export Successful",
-        description: `Your transaction data has been exported as a ${format.toUpperCase()} file.`,
-      });
-  };
 
   const handleProfileUpdate = async () => {
     if (!user || name === user.name) return;
@@ -209,17 +155,7 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Data Management</CardTitle>
-          <CardDescription>Export your financial data.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Button variant="outline" onClick={() => handleExport('csv')}>Export Data as CSV</Button>
-          <Button variant="outline" onClick={() => handleExport('xlsx')}>Export Data as Excel</Button>
-        </CardContent>
-      </Card>
+
 
       <Card>
         <CardHeader>
