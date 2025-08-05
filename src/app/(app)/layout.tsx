@@ -1,5 +1,6 @@
-
 "use client";
+
+import Head from "next/head"; // ✅ Import Head
 
 import { MainSidebar } from "@/components/main-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
@@ -30,16 +31,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // User is signed in.
         const userDocRef = doc(db, "users", firebaseUser.uid);
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
-          const currentUser = { id: firebaseUser.uid, ...userDocSnap.data() } as Omit<User, 'password'>;
+          const currentUser = {
+            id: firebaseUser.uid,
+            ...userDocSnap.data(),
+          } as Omit<User, "password">;
           setUser(currentUser);
         }
-        
-        // Fetch data from Firestore
+
         const fetchData = async () => {
           try {
             const [transactions, goals, recurring] = await Promise.all([
@@ -50,7 +52,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             setTransactions(transactions);
             setSavingGoals(goals);
             setRecurringExpenses(recurring);
-
           } catch (error) {
             console.error("Failed to load data from Firestore", error);
           } finally {
@@ -59,12 +60,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         };
         fetchData();
       } else {
-        // User is signed out.
         setUser(null);
         setTransactions([]);
         setSavingGoals([]);
         setRecurringExpenses([]);
-        router.push('/login');
+        router.push("/login");
         setLoading(false);
       }
     });
@@ -73,27 +73,39 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [router, setUser, setTransactions, setSavingGoals, setRecurringExpenses]);
 
   if (loading || !user) {
-    return null; // or a loading spinner
+    return null; // or a spinner
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <MainSidebar />
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <MobileSidebar />
-          <div className="flex-1">
-            <h1 className="font-headline text-lg font-semibold">Cashflow Compass</h1>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <UserNav />
-          </div>
-        </header>
-        <main className="flex-1 p-4 sm:px-6 sm:py-0">
-          <CurrentBalance />
-          {children}
-        </main>
+    <>
+      {/* ✅ Add Google AdSense script via Head */}
+      <Head>
+        <meta name="google-adsense-account" content="ca-pub-3487579061580028"></meta>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3487579061580028"
+          crossOrigin="anonymous"
+        ></script>
+      </Head>
+
+      <div className="flex min-h-screen w-full flex-col bg-muted/40">
+        <MainSidebar />
+        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+            <MobileSidebar />
+            <div className="flex-1">
+              <h1 className="font-headline text-lg font-semibold">Cashflow Compass</h1>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <UserNav />
+            </div>
+          </header>
+          <main className="flex-1 p-4 sm:px-6 sm:py-0">
+            <CurrentBalance />
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
